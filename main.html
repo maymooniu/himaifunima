@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HIMAIF — Himpunan Mahasiswa Teknik Informatika UNIMA</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ============================================================ TOAST -->
+<div id="toast-container" class="toast-container"></div>
+
+<!-- ============================================================ APP -->
+<div class="app-wrapper">
+
+  <!-- ===== SIDEBAR ===== -->
+  <aside class="sidebar">
+    <a class="sidebar-logo" onclick="navigate('home')" style="cursor:pointer;">
+      <div class="sidebar-logo-icon">💻</div>
+      <div class="sidebar-logo-text">
+        <h2>HIMAIF</h2>
+        <span>UNIMA — TI</span>
+      </div>
+    </a>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-label">Utama</div>
+      <button class="nav-item active" data-page="home" onclick="navigate('home')">
+        <span class="nav-icon">🏠</span> Beranda
+      </button>
+      <button class="nav-item" data-page="about" onclick="navigate('about')">
+        <span class="nav-icon">ℹ️</span> Tentang HIMAIF
+      </button>
+      <button class="nav-item" data-page="dashboard" onclick="navigate('dashboard')">
+        <span class="nav-icon">📊</span> Dashboard
+      </button>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-label">Pengurus</div>
+      <button class="nav-item" data-page="pengurus" onclick="navigate('pengurus')">
+        <span class="nav-icon">👥</span> Data Pengurus
+      </button>
+      <button class="nav-item" data-page="arsip" onclick="navigate('arsip')">
+        <span class="nav-icon">📁</span> Arsip & LPJ
+      </button>
+      <button class="nav-item" data-page="proker" onclick="navigate('proker')">
+        <span class="nav-icon">📋</span> Program Kerja
+      </button>
+      <button class="nav-item" data-page="rapat" onclick="navigate('rapat')">
+        <span class="nav-icon">📝</span> Catatan Rapat
+      </button>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-label">Mahasiswa</div>
+      <button class="nav-item" data-page="achievement" onclick="navigate('achievement')">
+        <span class="nav-icon">🏆</span> Pencapaian
+      </button>
+      <button class="nav-item" data-page="materi" onclick="navigate('materi')">
+        <span class="nav-icon">📚</span> Bank Materi
+      </button>
+      <button class="nav-item" data-page="projects" onclick="navigate('projects')">
+        <span class="nav-icon">💡</span> Galeri Project
+      </button>
+      <button class="nav-item" data-page="blog" onclick="navigate('blog')">
+        <span class="nav-icon">✍️</span> Tech Blog
+      </button>
+      <button class="nav-item" data-page="aspirasi" onclick="navigate('aspirasi')">
+        <span class="nav-icon">📢</span> Kotak Aspirasi
+      </button>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-label">Admin</div>
+      <button class="nav-item" data-page="admin" onclick="navigate('admin')">
+        <span class="nav-icon">⚙️</span> Panel Admin
+      </button>
+    </div>
+
+    <div class="sidebar-footer">
+      <div style="font-size:11px;color:var(--text-dim);text-align:center;">
+        HIMAIF © 2024/2025<br>Prodi TI — UNIMA
+      </div>
+    </div>
+  </aside>
+
+  <!-- ===== MAIN CONTENT ===== -->
+  <div class="main-content">
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div class="topbar-left">
+        <button class="topbar-btn" id="menu-toggle" style="display:none;" onclick="document.querySelector('.sidebar').classList.toggle('open')">☰</button>
+        <div id="topbar-title" class="topbar-title">Beranda</div>
+      </div>
+      <div class="topbar-right">
+        <input type="text" class="topbar-search" placeholder="🔍 Cari...">
+        <button class="topbar-btn" id="admin-login-btn" onclick="openModal('login-modal')" title="Login Admin">🔑 Admin</button>
+      </div>
+    </div>
+
+    <!-- ===== PAGE: HOME ===== -->
+    <div id="page-home" class="page active">
+      <div class="hero">
+        <div class="hero-content">
+          <div class="hero-label">✨ Selamat Datang di HIMAIF</div>
+          <h1>Himpunan Mahasiswa<br><span>Teknik Informatika</span></h1>
+          <p>Wadah aspirasi, pengembangan diri, dan kolaborasi mahasiswa Teknik Informatika Universitas Negeri Manado. Bersama kita tumbuh, berinovasi, dan berkarya.</p>
+          <div class="hero-actions">
+            <button class="btn btn-accent btn-lg" onclick="navigate('pengurus')">👥 Kenali Pengurus</button>
+            <button class="btn btn-ghost btn-lg" onclick="navigate('proker')">📋 Program Kerja</button>
+            <button class="btn btn-ghost btn-lg" onclick="navigate('aspirasi')">📢 Sampaikan Aspirasi</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="home-stats"></div>
+
+      <div class="section-header">
+        <div>
+          <div class="section-title">📰 Berita & Informasi <span>Terbaru</span></div>
+          <div class="section-subtitle">Update terkini dari kampus, prodi, dan kegiatan HIMAIF</div>
+        </div>
+      </div>
+      <div id="home-news"></div>
+
+      <!-- Quick links -->
+      <div class="section-header mt-4">
+        <div class="section-title">🚀 Akses <span>Cepat</span></div>
+      </div>
+      <div class="grid-4">
+        <div class="card" style="cursor:pointer;" onclick="navigate('materi')">
+          <div class="card-body" style="text-align:center;padding:28px 16px;">
+            <div style="font-size:36px;margin-bottom:12px;">📚</div>
+            <div class="font-bold">Bank Materi</div>
+            <div class="text-sm text-muted mt-1">E-book, modul, referensi</div>
+          </div>
+        </div>
+        <div class="card" style="cursor:pointer;" onclick="navigate('projects')">
+          <div class="card-body" style="text-align:center;padding:28px 16px;">
+            <div style="font-size:36px;margin-bottom:12px;">💡</div>
+            <div class="font-bold">Galeri Project</div>
+            <div class="text-sm text-muted mt-1">Karya mahasiswa TI</div>
+          </div>
+        </div>
+        <div class="card" style="cursor:pointer;" onclick="navigate('blog')">
+          <div class="card-body" style="text-align:center;padding:28px 16px;">
+            <div style="font-size:36px;margin-bottom:12px;">✍️</div>
+            <div class="font-bold">Tech Blog</div>
+            <div class="text-sm text-muted mt-1">Artikel & tutorial IT</div>
+          </div>
+        </div>
+        <div class="card" style="cursor:pointer;" onclick="navigate('aspirasi')">
+          <div class="card-body" style="text-align:center;padding:28px 16px;">
+            <div style="font-size:36px;margin-bottom:12px;">📢</div>
+            <div class="font-bold">Kotak Aspirasi</div>
+            <div class="text-sm text-muted mt-1">Kritik & saran anonim</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== PAGE: ABOUT ===== -->
+    <div id="page-about" class="page">
+      <!-- HIMAIF -->
+      <div class="section-header">
+        <div>
+          <div class="section-title">Tentang <span>HIMAIF</span></div>
+          <div class="section-subtitle">Himpunan Mahasiswa Teknik Informatika UNIMA</div>
+        </div>
+      </div>
+      <div class="grid-2 mb-6">
+        <div class="card">
+          <div class="card-body">
+            <div style="font-size:48px;margin-bottom:16px;">💻</div>
+            <h3 style="font-family:var(--font-display);font-size:20px;font-weight:800;margin-bottom:12px;">Apa itu HIMAIF?</h3>
+            <p style="color:var(--text-muted);line-height:1.8;">HIMAIF (Himpunan Mahasiswa Teknik Informatika) adalah organisasi kemahasiswaan resmi yang mewadahi seluruh mahasiswa Program Studi Teknik Informatika Universitas Negeri Manado. HIMAIF berfungsi sebagai jembatan antara mahasiswa dengan civitas akademika kampus, serta mendorong pengembangan potensi akademik dan non-akademik di bidang teknologi informasi.</p>
+          </div>
+        </div>
+        <div>
+          <div class="card mb-4">
+            <div class="card-body">
+              <h3 style="font-family:var(--font-display);font-size:16px;font-weight:800;margin-bottom:12px;">🌟 Visi</h3>
+              <p style="color:var(--text-muted);line-height:1.7;font-size:14px;" id="himaif-visi">Menjadi himpunan mahasiswa yang inovatif, berdedikasi, dan berkontribusi nyata bagi pengembangan ilmu teknologi informasi di lingkungan Universitas Negeri Manado.</p>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-body">
+              <h3 style="font-family:var(--font-display);font-size:16px;font-weight:800;margin-bottom:12px;">🎯 Misi</h3>
+              <div style="color:var(--text-muted);line-height:1.8;font-size:14px;" id="himaif-misi"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- PRODI -->
+      <div class="section-header mt-4">
+        <div>
+          <div class="section-title">Tentang Prodi <span>Teknik Informatika</span></div>
+          <div class="section-subtitle">Universitas Negeri Manado (UNIMA)</div>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-body">
+            <div style="font-size:48px;margin-bottom:16px;">🎓</div>
+            <h3 style="font-family:var(--font-display);font-size:20px;font-weight:800;margin-bottom:12px;">Prodi TI UNIMA</h3>
+            <p style="color:var(--text-muted);line-height:1.8;">Program Studi Teknik Informatika Universitas Negeri Manado merupakan program studi yang berfokus pada ilmu komputer, pengembangan perangkat lunak, dan teknologi informasi. Prodi ini telah menghasilkan banyak lulusan kompeten yang berkiprah di berbagai industri teknologi nasional maupun internasional.</p>
+            <div class="flex gap-3 mt-4 flex-wrap">
+              <span class="badge badge-green">✅ Akreditasi Baik Sekali</span>
+              <span class="badge badge-blue">🏛️ Sejak 2008</span>
+              <span class="badge badge-amber">📍 Tondano, Sulawesi Utara</span>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="card mb-4">
+            <div class="card-body">
+              <h3 style="font-family:var(--font-display);font-size:16px;font-weight:800;margin-bottom:12px;">🌟 Visi Prodi</h3>
+              <p style="color:var(--text-muted);line-height:1.7;font-size:14px;">Menjadi program studi unggulan yang menghasilkan lulusan kompeten, inovatif, dan berdaya saing global di bidang teknologi informasi.</p>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-body">
+              <h3 style="font-family:var(--font-display);font-size:16px;font-weight:800;margin-bottom:12px;">🎯 Misi Prodi</h3>
+              <ol style="color:var(--text-muted);line-height:2;font-size:14px;padding-left:18px;">
+                <li>Menyelenggarakan pendidikan berkualitas tinggi di bidang teknik informatika.</li>
+                <li>Mendorong penelitian yang relevan dengan kebutuhan industri.</li>
+                <li>Membangun kemitraan dengan industri dan institusi dalam dan luar negeri.</li>
+                <li>Mengembangkan karakter mahasiswa yang profesional dan berintegritas.</li>
+              </ol>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-4 mt-4">
+        <div class="stat-card blue"><div class="stat-icon">👩‍🎓</div><div class="stat-value">400+</div><div class="stat-label">Mahasiswa Aktif</div></div>
+        <div class="stat-card amber"><div class="stat-icon">👨‍🏫</div><div class="stat-value">25+</div><div class="stat-label">Dosen</div></div>
+        <div class="stat-card green"><div class="stat-icon">🎓</div><div class="stat-value">800+</div><div class="stat-label">Alumni</div></div>
+        <div class="stat-card purple"><div class="stat-icon">🏆</div><div class="stat-value">50+</div><div class="stat-label">Prestasi Nasional</div></div>
+      </div>
+    </div>
+
+    <!-- ===== PAGE: PENGURUS ===== -->
+    <div id="page-pengurus" class="page">
+      <div class="section-header">
+        <div>
+          <div class="section-title">Data <span>Pengurus</span></div>
+          <div class="section-subtitle">Pengurus aktif HIMAIF periode saat ini</div>
+        </div>
+        <div class="flex gap-2 flex-wrap">
+          <select class="form-control" style="width:auto;" id="pengurus-periode" onchange="STATE.activePeriode=this.value;renderPengurus()">
+            <option value="2024/2025">2024/2025 (Aktif)</option>
+            <option value="2023/2024">2023/2024</option>
+            <option value="2022/2023">2022/2023</option>
+          </select>
+          <button class="btn btn-ghost btn-sm" onclick="showToast('Mengekspor data pengurus...','info')">📥 Export</button>
+        </div>
+      </div>
+
+      <!-- Org Chart -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <span class="font-bold">🏢 Struktur Organisasi Interaktif</span>
+          <span class="text-sm text-muted" style="margin-left:8px;">— Hover atau klik kartu untuk detail anggota</span>
+        </div>
+        <div class="card-body">
+          <div id="org-chart-wrap"></div>
+        </div>
+      </div>
+
+      <!-- List -->
+      <div class="card">
+        <div class="card-header flex justify-between items-center">
+          <span class="font-bold">📋 Daftar Pengurus</span>
+          <div class="search-bar"><input type="text" placeholder="Cari nama..."></div>
+        </div>
+        <div id="pengurus-table" class="table-wrap"></div>
+      </div>
+    </div>
+
+    <!-- ===== PAGE: ARSIP ===== -->
+    <div id="page-arsip" class="page">
+      <div class="section-header">
+        <div>
+          <div class="section-title">Arsip & <span>LPJ</span></div>
+          <div class="section-subtitle">Dokumentasi periode-periode sebelumnya</div>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="showToast('Mengekspor arsip...','info')">📥 Export</button>
+      </div>
+
+      <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('arsip','pengurus',this)">📁 Arsip Pengurus</button>
+        <button class="tab-btn" onclick="switchTab('arsip','lpj',this)">📄 Arsip LPJ</button>
+        <button class="tab-btn" onclick="switchTab('arsip','kegiatan',this)">📸 Arsip Kegiatan</button>
+      </div>
+
+      <div id="arsip-tab-pengurus" class="tab-content active">
+        <div id="arsip-pengurus-list"></div>
+      </div>
+      <div id="arsip-tab-lpj" class="tab-content">
+        <div id="arsip-lpj-list"></div>
+      </div>
+      <div id="arsip-tab-kegiatan" class="tab-content">
+        <div class="achievement-grid">
+          <div class="achievement-card"><div class="achievement-medal">📸</div><div class="achievement-title">HIMTECH Week 2024</div><div class="achievement-name">Akademik & Keilmuan</div><div class="achievement-desc">Dokumentasi kegiatan seminar dan lomba IT tahunan HIMAIF.</div><div class="achievement-date">Agustus 2024</div></div>
+          <div class="achievement-card"><div class="achievement-medal">🎉</div><div class="achievement-title">Ospek Mahasiswa Baru 2024</div><div class="achievement-name">PSDM</div><div class="achievement-desc">Penyambutan dan orientasi mahasiswa baru angkatan 2024.</div><div class="achievement-date">Maret 2024</div></div>
+          <div class="achievement-card"><div class="achievement-medal">🏅</div><div class="achievement-title">Hackathon Internal HIMAIF</div><div class="achievement-name">Akademik & Keilmuan</div><div class="achievement-desc">Kompetisi hacking dan coding dalam 24 jam antar tim mahasiswa TI.</div><div class="achievement-date">Mei 2024</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== PAGE: PROKER ===== -->
+    <div id="page-proker" class="page">
+      <div class="section-header">
+        <div>
+          <div class="section-title">Program <span>Kerja</span></div>
+          <div class="section-subtitle">Rencana dan realisasi program kerja periode aktif</div>
+        </div>
+        <div class="flex gap-2">
+          <button class="btn btn-ghost btn-sm" onclick="showToast('Mengekspor data proker...','info')">📥 Export</button>
+        </div>
+      </div>
+
+      <div id="proker-stats"></div>
+
+      <div class="filter-bar">
+        <span style="font-size:13px;font-weight:600;color:var(--text-muted);">Filter:</span>
+        <select class="form-control" style="width:auto;" id="proker-filter" onchange="renderProker()">
+          <option value="all">Semua Status</option>
+          <option value="aktif">Belum Dimulai</option>
+          <option value="sedang_berjalan">Sedang Berjalan</option>
+          <option value="selesai">Selesai</option>
+          <option value="dibatalkan">Dibatalkan</option>
+        </select>
+        <div class="search-bar"><input type="text" placeholder="Cari proker..."></div>
+      </div>
+
+      <div id="proker-list"></div>
+    </div>
+
+    <!-- ===== PAGE: ACHIEVEMENT ===== -->
+    <div id="page-achievement" class="page">
+      <div class="section-header">
+        <div>
+          <div class="section-title">Pencapaian <span>Prodi</span></div>
+          <div class="section-subtitle">Prestasi mahasiswa dan program studi TI UNIMA</div>
+        </div>
+        <div class="flex gap-2">
+          <button class="btn btn-ghost btn-sm" onclick="showToast('Mengekspor data pencapaian...','info')">📥 Export</button>
+          <button class="btn btn-primary btn-sm" onclick="showToast('Fitur submit pencapaian segera hadir!','info')">+ Tambah</button>
+        </div>
+      </div>
+      <div class="filter-bar" id="ach-filters"></div>
+      <div id="ach-list"></div>
+    </div>
+
+    <!-- ===== PAGE: MATERI ===== -->
+    <div id="page-materi" class="page">
+      <div class="section-header">
+        <div>
+          <div class="section-title">Bank <span>Materi</span></div>
+          <div class="section-subtitle">E-book, modul praktikum, paper, dan referensi ilmiah</div>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="showToast('Fitur upload materi segera hadir!','info')">📤 Upload Materi</button>
+      </div>
+      <div class="filter-bar" id="materi-filters"></div>
+      <div id="materi-list"></div>
+    </div>
+
+    <!-- ===== PAGE: PROJECTS ===== -->
+    <div id="page-projects" class="page">
+      <div class="section-header">
+        <div>
+          <div class="section-title">Galeri <span>Project</span></div>
+          <div class="section-subtitle">Karya aplikasi, web, UI/UX, dan game mahasiswa TI UNIMA</div>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="showToast('Fitur submit project segera hadir!','info')">+ Submit Project</button>
+      </div>
+      <div class="filter-bar">
+        <button class="filter-chip active" onclick="setFilter(this,'all')">Semua</button>
+        <button class="filter-chip" onclick="setFilter(this,'Mobile App')">📱 Mobile</button>
+        <button class="filter-chip" onclick="setFilter(this,'Web App')">🌐 Web</button>
+        <button class="filter-chip" onclick="setFilter(this,'AI/ML')">🤖 AI/ML</button>
+      </div>
+      <div id="project-list"></div>
+    </div>
+
+    <!-- ===== PAGE: BLOG ===== -->
+    <div id="page-blog" class="page">
+      <div class="section-header">
+        <div>
+          <div class="section-title">Tech <span>Blog</span></div>
+          <div class="section-subtitle">Artikel, tutorial, dan bedah kode oleh mahasiswa TI</div>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="openModal('submit-blog-modal')">✍️ Tulis Artikel</button>
+      </div>
+      <div id="blog-list"></div>
+    </div>
+
+    <!-- ===== PAGE: RAPAT ===== -->
+    <div id="page-rapat" class="page">
+      <div class="section-header">
+        <div>
+          <div class="section-title">Catatan <span>Rapat</span></div>
+          <div class="section-subtitle">Dokumentasi dan notulensi rapat-rapat HIMAIF</div>
+        </div>
+        <div class="flex gap-2">
+          <button class="btn btn-ghost btn-sm" onclick="showToast('Mengekspor catatan rapat...','info')">📥 Export</button>
+          <button class="btn btn-primary btn-sm" onclick="STATE.isAdmin ? openModal('add-rapat-modal') : showToast('Fitur ini khusus Admin!','error')">+ Tambah Rapat</button>
+        </div>
+      </div>
+      <div id="rapat-list"></div>
+    </div>
+
+    <!-- ===== PAGE: ASPIRASI ===== -->
+    <div id="page-aspirasi" class="page">
+      <div class="section-header">
+        <div>
+          <div class="section-title">Kotak <span>Aspirasi</span></div>
+          <div class="section-subtitle">Sampaikan kritik, saran, dan aspirasi secara anonim</div>
+        </div>
+      </div>
+
+      <!-- Form submit -->
+      <div class="card mb-4">
+        <div class="card-body">
+          <div class="font-bold mb-3" style="font-size:16px;">📢 Sampaikan Aspirasimu</div>
+          <p class="text-sm text-muted mb-4">Identitasmu terlindungi. Aspirasi yang masuk akan ditinjau oleh pengurus HIMAIF dan ditindaklanjuti dengan sebaik mungkin.</p>
+          <div class="form-group">
+            <label class="form-label">Kategori</label>
+            <select class="form-control" id="asp-kategori">
+              <option>Fasilitas</option><option>Akademik</option><option>Himpunan</option><option>Lainnya</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Pesan Aspirasi</label>
+            <textarea class="form-control" id="asp-pesan" rows="4" placeholder="Tuliskan aspirasi, kritik, atau saran Anda di sini..."></textarea>
+          </div>
+          <button class="btn btn-primary" onclick="submitAspirasi()">📤 Kirim Aspirasi</button>
+        </div>
+      </div>
+
+      <!-- List aspirasi -->
+      <div class="section-header">
+        <div class="section-title" style="font-size:20px;">Aspirasi <span>Masuk</span></div>
+      </div>
+      <div class="filter-bar" id="asp-filters"></div>
+      <div id="asp-list"></div>
+    </div>
+
+    <!-- ===== PAGE: DASHBOARD ===== -->
+    <div id="page-dashboard" class="page">
+      <div class="section-header">
+        <div>
+          <div class="section-title">📊 <span>Dashboard</span></div>
+          <div class="section-subtitle">Ringkasan statistik seluruh data HIMAIF</div>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="showToast('Mengekspor dashboard...','info')">📥 Export PDF</button>
+      </div>
+      <div id="dashboard-stats"></div>
+    </div>
+
+    <!-- ===== PAGE: ADMIN ===== -->
+    <div id="page-admin" class="page">
+      <div class="section-header">
+        <div>
+          <div class="section-title">⚙️ Panel <span>Admin</span></div>
+          <div class="section-subtitle">Kelola seluruh konten dan data website HIMAIF</div>
+        </div>
+      </div>
+      <div id="admin-content"></div>
+    </div>
+
+  </div><!-- end main-content -->
+</div><!-- end app-wrapper -->
+
+<!-- ============================================================ MODALS -->
+
+<!-- Login Modal -->
+<div class="modal-overlay" id="login-modal" onclick="if(event.target===this)closeModal('login-modal')">
+  <div class="modal" style="max-width:420px;">
+    <div class="modal-header">
+      <div class="modal-title">🔑 Login Admin</div>
+      <button class="modal-close" onclick="closeModal('login-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="text-align:center;margin-bottom:28px;">
+        <div class="login-logo" style="margin:0 auto 16px;">⚙️</div>
+        <div class="text-muted text-sm">Masukkan password admin HIMAIF untuk mengakses panel pengelolaan.</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password Admin</label>
+        <input type="password" class="form-control" id="admin-pwd" placeholder="Masukkan password...">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('login-modal')">Batal</button>
+      <button class="btn btn-primary" onclick="adminLogin()">🔓 Login</button>
+    </div>
+  </div>
+</div>
+
+<!-- Member Detail Modal -->
+<div class="modal-overlay" id="member-modal" onclick="if(event.target===this)closeModal('member-modal')">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">👤 Detail Anggota</div>
+      <button class="modal-close" onclick="closeModal('member-modal')">✕</button>
+    </div>
+    <div class="modal-body" id="member-modal-content"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('member-modal')">Tutup</button>
+    </div>
+  </div>
+</div>
+
+<!-- Rapat Detail Modal -->
+<div class="modal-overlay" id="rapat-modal" onclick="if(event.target===this)closeModal('rapat-modal')">
+  <div class="modal" style="max-width:700px;">
+    <div class="modal-header">
+      <div class="modal-title">📝 Detail Rapat</div>
+      <button class="modal-close" onclick="closeModal('rapat-modal')">✕</button>
+    </div>
+    <div class="modal-body" id="rapat-modal-content"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('rapat-modal')">Tutup</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Pengurus Modal -->
+<div class="modal-overlay" id="add-pengurus-modal" onclick="if(event.target===this)closeModal('add-pengurus-modal')">
+  <div class="modal" style="max-width:680px;">
+    <div class="modal-header">
+      <div class="modal-title">➕ Tambah Pengurus</div>
+      <button class="modal-close" onclick="closeModal('add-pengurus-modal')">✕</button>
+    </div>
+    <div class="modal-body" id="add-pengurus-modal-content"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('add-pengurus-modal')">Batal</button>
+      <button class="btn btn-primary" onclick="saveNewPengurus()">💾 Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- Submit Blog Modal -->
+<div class="modal-overlay" id="submit-blog-modal" onclick="if(event.target===this)closeModal('submit-blog-modal')">
+  <div class="modal" style="max-width:680px;">
+    <div class="modal-header">
+      <div class="modal-title">✍️ Tulis Artikel</div>
+      <button class="modal-close" onclick="closeModal('submit-blog-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="admin-indicator mb-4"><span>ℹ️</span><span>Artikel akan direview admin sebelum dipublikasikan.</span></div>
+      <div class="form-group"><label class="form-label">Judul Artikel *</label><input type="text" class="form-control" id="blog-judul" placeholder="Judul artikel yang menarik..."></div>
+      <div class="grid-2">
+        <div class="form-group"><label class="form-label">Nama Penulis *</label><input type="text" class="form-control" id="blog-penulis" placeholder="Nama lengkap..."></div>
+        <div class="form-group"><label class="form-label">Divisi</label>
+          <select class="form-control" id="blog-divisi">
+            <option>Akademik & Keilmuan</option><option>Kominfo</option><option>PSDM</option><option>Mikat</option><option>Umum</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group"><label class="form-label">Isi Artikel *</label><textarea class="form-control" id="blog-isi" rows="8" placeholder="Tuliskan artikel Anda di sini. Markdown didukung..."></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('submit-blog-modal')">Batal</button>
+      <button class="btn btn-primary" onclick="submitBlog()">📤 Submit untuk Review</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Rapat Modal -->
+<div class="modal-overlay" id="add-rapat-modal" onclick="if(event.target===this)closeModal('add-rapat-modal')">
+  <div class="modal" style="max-width:680px;">
+    <div class="modal-header">
+      <div class="modal-title">📝 Tambah Catatan Rapat</div>
+      <button class="modal-close" onclick="closeModal('add-rapat-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group"><label class="form-label">Judul Rapat *</label><input type="text" class="form-control" id="rapat-judul" placeholder="Nama/judul rapat..."></div>
+      <div class="grid-2">
+        <div class="form-group"><label class="form-label">Tanggal</label><input type="date" class="form-control" id="rapat-tanggal"></div>
+        <div class="form-group"><label class="form-label">Waktu</label><input type="text" class="form-control" id="rapat-waktu" placeholder="09:00 - 11:00"></div>
+        <div class="form-group"><label class="form-label">Tempat</label><input type="text" class="form-control" id="rapat-tempat" placeholder="Lokasi rapat..."></div>
+        <div class="form-group"><label class="form-label">Jenis Rapat</label>
+          <select class="form-control" id="rapat-jenis">
+            <option>Bulanan</option><option>Mingguan</option><option>Divisi</option><option>Besar</option><option>Darurat</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Jumlah Hadir</label><input type="number" class="form-control" id="rapat-hadir" placeholder="0"></div>
+        <div class="form-group"><label class="form-label">Total Anggota</label><input type="number" class="form-control" id="rapat-total" placeholder="0"></div>
+        <div class="form-group"><label class="form-label">Notulis</label><input type="text" class="form-control" id="rapat-notulis" placeholder="Nama notulis..."></div>
+        <div class="form-group"><label class="form-label">Total Spontan (Rp)</label><input type="number" class="form-control" id="rapat-spontan" placeholder="0"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Ringkasan / Notulen Rapat</label><textarea class="form-control" id="rapat-summary" rows="5" placeholder="Isi dan poin-poin penting rapat..."></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('add-rapat-modal')">Batal</button>
+      <button class="btn btn-primary" onclick="submitRapat()">💾 Simpan Catatan</button>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+<script>
+// Tab switcher helper
+function switchTab(prefix, name, btn) {
+  document.querySelectorAll(`[id^="${prefix}-tab-"]`).forEach(el => el.classList.remove('active'));
+  document.getElementById(`${prefix}-tab-${name}`).classList.add('active');
+  // Find parent tabs
+  const parentTabs = btn.closest('.tabs');
+  if (parentTabs) parentTabs.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function setFilter(btn, cat) {
+  document.querySelectorAll('.filter-chip').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+// About page dynamic content
+function initAboutPage() {
+  const misiEl = document.getElementById('himaif-misi');
+  if (misiEl) {
+    const misi = DATA.settings.misi.split('\n');
+    misiEl.innerHTML = '<ol style="padding-left:18px;">' + misi.map(m => `<li style="line-height:2;">${m.replace(/^\d+\. /,'')}</li>`).join('') + '</ol>';
+  }
+}
+// Run about init when navigating
+const origNavigate = navigate;
+window.addEventListener('load', () => { initAboutPage(); });
+
+// Mobile menu
+const mq = window.matchMedia('(max-width: 1024px)');
+function handleMQ(e) {
+  const btn = document.getElementById('menu-toggle');
+  if (btn) btn.style.display = e.matches ? 'flex' : 'none';
+}
+mq.addEventListener('change', handleMQ);
+handleMQ(mq);
+</script>
+</body>
+</html>
