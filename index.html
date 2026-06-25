@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Website Resmi HIMAIF — Himpunan Mahasiswa Teknik Informatika Universitas Negeri Manado. Portal informasi, arsip, program kerja, dan layanan mahasiswa TI UNIMA.">
+  <meta name="keywords" content="HIMAIF, Teknik Informatika, UNIMA, Himpunan Mahasiswa, Universitas Negeri Manado, Manado">
+  <meta name="author" content="Christian Tendean">
+  <meta name="theme-color" content="#070C1A">
+  <title>HIMAIF — Himpunan Mahasiswa Teknik Informatika UNIMA</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- TOAST -->
+<div id="toast-container" class="toast-container"></div>
+<!-- SIDEBAR OVERLAY (mobile) -->
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+<div class="app-wrapper">
+
+  <!-- ===================== SIDEBAR ===================== -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand" onclick="navigate('home')">
+      <div class="sidebar-logo-fallback" id="sidebar-logo">⚙️</div>
+      <div class="sidebar-brand-text">
+        <h2>HIMAIF</h2>
+        <span>Teknik Informatika · UNIMA</span>
+      </div>
+    </div>
+    <div id="sidebar-nav">
+      <div style="padding:20px;text-align:center;color:var(--text-dim);font-size:12px;">Memuat navigasi...</div>
+    </div>
+    <div class="sidebar-footer">
+      <div>HIMAIF © 2025 · TI UNIMA</div>
+      <div style="margin-top:4px;font-size:10px;opacity:0.55;">
+        Project by <span style="color:var(--orange);font-weight:600;">Christian Tendean</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ===================== MAIN CONTENT ===================== -->
+  <div class="main-content">
+
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div class="topbar-left">
+        <button class="topbar-btn menu-toggle" id="menu-toggle" title="Menu">☰</button>
+        <div id="topbar-title" class="topbar-title">Beranda</div>
+      </div>
+      <div class="topbar-right" id="topbar-right">
+        <div class="search-wrap">
+          <span class="search-icon" style="position:absolute;left:11px;color:var(--text-dim);font-size:14px;">🔍</span>
+          <input type="text" placeholder="Cari halaman..." id="global-search" autocomplete="off" style="padding-left:32px;background:none;border:none;outline:none;color:var(--text);font-size:13px;width:180px;">
+        </div>
+        <div class="user-pill login-btn" onclick="openModal('login-modal')">🔑 Login</div>
+      </div>
+    </div>
+
+    <!-- ==================== PAGE: HOME ==================== -->
+    <div id="page-home" class="page active">
+      <div class="page-body">
+        <div id="home-hero"></div>
+        <div id="home-stats"></div>
+        <div id="home-news"></div>
+      </div>
+    </div>
+
+    <!-- ==================== PAGE: ABOUT ==================== -->
+    <div id="page-about" class="page">
+      <div class="page-body">
+        <div class="section-header">
+          <div>
+            <div class="section-title">Tentang <span>HIMAIF</span> &amp; Prodi</div>
+            <div class="section-sub">Himpunan Mahasiswa Teknik Informatika · Universitas Negeri Manado</div>
+          </div>
+        </div>
+        <div id="about-content"><div class="loading-wrap"><div class="spinner"></div></div></div>
+      </div>
+    </div>
+
+    <!-- ==================== PAGE: PENGURUS ==================== -->
+    <div id="page-pengurus" class="page">
+      <div class="page-body">
+        <div class="section-header">
+          <div>
+            <div class="section-title">Data <span>Pengurus</span></div>
+            <div class="section-sub">Struktur organisasi dan daftar anggota pengurus HIMAIF</div>
+          </div>
+          <div class="flex gap-2 flex-wrap">
+            <select class="form-control" style="width:auto;" id="pengurus-periode" onchange="STATE.activePeriode=this.value;renderPengurus()">
+              <option value="2025/2026">2025/2026 (Aktif)</option>
+              <option value="2024/2025">2024/2025</option>
+              <option value="2023/2024">2023/2024</option>
+              <option value="2022/2023">2022/2023</option>
+            </select>
+            <button class="btn btn-ghost btn-sm" onclick="exportPengurusCSV(document.getElementById('pengurus-periode').value)">📥 Export CSV</button>
+            <button class="btn btn-primary btn-sm admin-only" style="display:none" onclick="openAddPengurusModal()">+ Tambah Pengurus</button>
+          </div>
+        </div>
+        <!-- Org Chart -->
+        <div class="card mb-4">
+          <div class="card-header">
+            <span class="card-title">🏢 Struktur Organisasi Interaktif</span>
+            <span class="text-xs text-muted">Hover untuk info · Klik untuk detail</span>
+          </div>
+          <div class="card-body" style="overflow-x:auto;padding-bottom:24px;" id="org-chart-wrap">
+            <div class="loading-wrap"><div class="spinner"></div></div>
+          </div>
+        </div>
+        <!-- Member List -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">📋 Daftar Anggota</span>
+            <div class="flex gap-2 flex-wrap">
+              <select class="form-control" style="width:auto;padding:6px 10px;font-size:12px;" id="pengurus-filter-divisi" onchange="renderPengurusList(_pengurusData)">
+                <option value="all">Semua Divisi</option>
+                <option value="Inti">Inti</option>
+                <option value="Akademik &amp; Keilmuan">Akademik &amp; Keilmuan</option>
+                <option value="PSDM">PSDM</option>
+                <option value="Kominfo">Kominfo</option>
+                <option value="Mikat">Mikat</option>
+                <option value="Hubungan Masyarakat">Hubungan Masyarakat</option>
+                <option value="Kewirausahaan">Kewirausahaan</option>
+              </select>
+              <div class="search-input-wrap">
+                <span class="search-icon">🔍</span>
+                <input type="text" class="form-control" id="pengurus-search" placeholder="Cari nama / NIM..." oninput="renderPengurusList(_pengurusData)" style="padding-left:30px;">
+              </div>
+            </div>
+          </div>
+          <div id="pengurus-table-body"><div class="loading-wrap"><div class="spinner"></div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== PAGE: ARSIP ==================== -->
+    <div id="page-arsip" class="page">
+      <div class="page-body">
+        <div class="section-header">
+          <div>
+            <div class="section-title">Arsip <span>&amp; LPJ</span></div>
+            <div class="section-sub">Dokumentasi periode lalu dan laporan pertanggungjawaban</div>
+          </div>
+          <div class="flex gap-2">
+            <button class="btn btn-ghost btn-sm admin-only" style="display:none" onclick="openModal('add-lpj-modal')">+ Tambah LPJ</button>
+            <button class="btn btn-ghost btn-sm admin-only" style="display:none" onclick="openAddKegiatanModal()">+ Tambah Kegiatan</button>
+          </div>
+        </div>
+        <div class="tabs">
+          <button class="tab-btn active" onclick="switchTab('arsip','pengurus',this);renderArsipPengurus()">📁 Arsip Pengurus</button>
+          <button class="tab-btn" onclick="switchTab('arsip','lpj',this);renderArsipLPJ()">📄 Arsip LPJ</button>
+          <button class="tab-btn" onclick="switchTab('arsip','kegiatan',this);renderArsipKegiatan()">📸 Arsip Kegiatan</button>
+        </div>
+        <div id="arsip-tab-pengurus" class="tab-content active">
+          <div class="filter-bar mb-4">
+            <select class="form-control" style="width:auto;" id="arsip-periode-filter" onchange="renderArsipPengurus()">
+              <option value="all">Semua Periode Lalu</option>
+            </select>
+          </div>
+          <div id="arsip-pengurus-list"><div class="loading-wrap"><div class="spinner"></div></div></div>
+        </div>
+        <div id="arsip-tab-lpj" class="tab-content">
+          <div class="filter-bar mb-4 flex-wrap">
+            <select class="form-control" style="width:auto;" id="arsip-lpj-periode" onchange="renderArsipLPJ()">
+              <option value="all">Semua Periode</option>
+              <option value="2025/2026">2025/2026</option>
+              <option value="2024/2025">2024/2025</option>
+              <option value="2023/2024">2023/2024</option>
+              <option value="2022/2023">2022/2023</option>
+            </select>
+            <select class="form-control" style="width:auto;" id="arsip-lpj-divisi" onchange="renderArsipLPJ()">
+              <option value="all">Semua Divisi</option>
+              <option value="Semua Divisi">Umum (Semua)</option>
+              <option value="Inti">Inti</option>
+              <option value="Akademik &amp; Keilmuan">Akademik &amp; Keilmuan</option>
+              <option value="PSDM">PSDM</option>
+              <option value="Kominfo">Kominfo</option>
+              <option value="Mikat">Mikat</option>
+              <option value="Hubungan Masyarakat">Hubungan Masyarakat</option>
+              <option value="Kewirausahaan">Kewirausahaan</option>
+            </select>
+          </div>
+          <div id="arsip-lpj-list"><div class="loading-wrap"><div class="spinner"></div></div></div>
+        </div>
+        <div id="arsip-tab-kegiatan" class="tab-content">
+          <div class="filter-bar mb-4">
+            <select class="form-control" style="width:auto;" id="arsip-kegiatan-periode" onchange="renderArsipKegiatan()">
+              <option value="all">Semua Periode</option>
+              <option value="2025/2026">2025/2026</option>
+              <option value="2024/2025">2024/2025</option>
+              <option value="2023/2024">2023/2024</option>
+            </select>
+          </div>
+          <div id="arsip-kegiatan-list"><div class="loading-wrap"><div class="spinner"></div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== PAGE: PROKER ==================== -->
+    <div id="page-proker" class="page">
+      <div class="page-body">
+        <div class="section-header">
+          <div>
+            <div class="section-title">Program <span>Kerja</span></div>
+            <div class="section-sub">Rencana dan realisasi program kerja periode aktif</div>
+          </div>
+          <div class="flex gap-2 flex-wrap">
+            <button class="btn btn-ghost btn-sm" onclick="exportProkerCSV()">📥 Export CSV</button>
+            <button class="btn btn-primary btn-sm admin-only" style="display:none" onclick="openAddProkerModal()">+ Tambah Proker</button>
+          </div>
+        </div>
+        <div id="proker-stats" class="mb-4"></div>
+        <div class="filter-bar flex-wrap mb-4">
+          <select class="form-control" style="width:auto;" id="proker-filter-status" onchange="filterProker()">
+            <option value="all">Semua Status</option>
+            <option value="aktif">Belum Dimulai</option>
+            <option value="sedang_berjalan">Sedang Berjalan</option>
+            <option value="selesai">Selesai</option>
+            <option value="dibatalkan">Dibatalkan</option>
+          </select>
+          <select class="form-control" style="width:auto;" id="proker-filter-divisi" onchange="filterProker()">
+            <option value="all">Semua Divisi</option>
+            <option value="Akademik &amp; Keilmuan">Akademik &amp; Keilmuan</option>
+            <option value="PSDM">PSDM</option>
+            <option value="Kominfo">Kominfo</option>
+            <option value="Mikat">Mikat</option>
+            <option value="Hubungan Masyarakat">Hubungan Masyarakat</option>
+            <option value="Kewirausahaan">Kewirausahaan</option>
+          </select>
+          <div class="search-input-wrap" style="flex:1;min-width:180px;max-width:260px;">
+            <span class="search-icon">🔍</span>
+            <input type="text" class="form-control" id="proker-search" placeholder="Cari proker..." oninput="filterProker()" style="padding-left:30px;">
+          </div>
+        </div>
+        <div id="proker-list"><div class="loading-wrap"><div class="spinner"></div></div></div>
+      </div>
+    </div>
+
+    <!-- ==================== PAGE: ACHIEVEMENT ==================== -->
+    <div id="page-achievement" class="page">
+      <div class="page-body">
+        <div class="section-header">
+          <div>
+            <div class="section-title">Pencapaian <span>Prodi</span></div>
+            <div class="section-sub">Prestasi mahasiswa dan program studi Teknik Informatika UNIMA</div>
+          </div>
+          <div class="flex gap-2">
+            <button class="btn btn-ghost btn-sm" onclick="exportPencapaianCSV()">📥 Export</button>
+            <button class="btn btn-primary btn-sm admin-only" style="display:none" onclick="openModal('add-ach-modal')">+ Tambah Prestasi</button>
+          </div>
+        </div>
+        <div class="filter-bar mb-3" id="ach-filter-kat"></div>
+        <div class="filter-bar mb-4" id="ach-filter-lvl" style="margin-top:-8px;"></div>
+        <div class="search-input-wrap mb-4" style="max-width:280px;">
+          <span class="search-icon">🔍</span>
+          <input type="text" class="form-control" id="ach-search" placeholder="Cari nama / prestasi..." oninput="renderAchList(_achKat,_achLvl)" style="padding-left:30px;">
+        </div>
+        <div id="ach-list"><div class="loading-wrap"><div class="spinner"></div></div></div>
+      </div>
+    </div>
+
+    <!-- ==================== PAGE: MATERI ==================== -->
+    <div id="page-materi" class="page">
+      <div class="page-body">
+        <div class="section-header">
+          <div>
+            <div class="section-title">Bank <span>Materi</span></div>
+            <div class="section-sub">E-book, modul praktikum, paper, dan referensi ilmiah</div>
+          </div>
+          <button class="btn btn-primary btn-sm admin-only" style="display:none" onclick="openModal('add-materi-modal')">📤 Upload Materi</button>
+        </div>
+        <div class="flex gap-3 flex-wrap mb-4">
+          <div class="filter-bar" id="materi-filters" style="margin-bottom:0;flex:1;flex-wrap:wrap;"></div>
+          <div class="search-input-wrap" style="max-width:240px;">
+            <span class="search-icon">🔍</span>
+            <input type="text" class="form-control" id="materi-search" placeholder="Cari judul / tag..." oninput="filterMateriBySearch()" style="padding-left:30px;">
+          </div>
+        </div>
+        <div id="materi-list"><div class="loading-wrap"><div class="spinner"></div></div></div>
+      </div>
+    </div>
+
+    <!-- ==================== PAGE: PROJECTS ==================== -->
+    <div id="page-projects" class="page">
+      <div class="page-body">
+        <div class="section-header">
+          <div>
+            <div class="section-title">Galeri <span>Project</span></div>
+            <div class="section-sub">Karya aplikasi, website, UI/UX, dan game mahasiswa TI UNIMA</div>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="openModal('add-project-modal')">+ Submit Project</button>
+        </div>
+        <div class="filter-bar flex-wrap mb-4">
+          <button class="filter-chip active" onclick="filterProject('Semua',this)">🌐 Semua</button>
+          <button class="filter-chip" onclick="filterProject('Mobile App',this)">📱 Mobile App</button>
+          <button class="filter-chip" onclick="filterProject('Web App',this)">🌐 Web App</button>
+          <button class="filter-chip" onclick="filterProject('AI/ML',this)">🤖 AI/ML</button>
+          <button class="filter-chip" onclick="filterProject('Game',this)">🎮 Game</button>
+          <button class="filter-chip" onclick="filterProject('UI/UX',this)">🎨 UI/UX</button>
+          <div class="search-input-wrap ml-auto" style="max-width:200px;">
+            <span class="search-icon">🔍</span>
+            <input type="text" class="form-control" id="project-search" placeholder="Cari project..." oninput="filterProject(_activeProjectKat,null)" style="padding-left:30px;">
+          </div>
+        </div>
+        <div id="project-list"><div class="loading-wrap"><div class="spinner"></div></div></div>
+      </div>
+    </div>
+
+    <!-- ==================== PAGE: BLOG ==================== -->
+    <div id="page-blog" class="page">
+      <div class="page-body">
+        <div class="section-header">
+          <div>
+            <div class="section-title">Tech <span>Blog</span></div>
+            <div class="section-sub">Artikel, tutorial, dan bedah kode oleh mahasiswa TI</div>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="openModal('submit-blog-modal')">✍️ Tulis Artikel</button>
+        </div>
+        <div class="filter-bar flex-wrap mb-4">
+          <select class="form-control" style="width:auto;" id="blog-filter-status" onchange="renderBlogList()">
+            <option value="published">Published</option>
+            <option value="all" class="admin-only" style="display:none">Semua</option>
+          </select>
+          <div class="search-input-wrap" style="max-width:220px;">
+            <span class="search-icon">🔍</span>
+            <input type="text" class="form-control" id="blog-search" placeholder="Cari artikel..." oninput="renderBlogList()" style="padding-left:30px;">
+          </div>
+        </div>
+        <div id="blog-list"><div class="loading-wrap"><div class="spinner"></div></div></div>
+      </div>
+    </div>
+
+    <!-- ==================== PAGE: RAPAT ==================== -->
+    <div id="page-rapat" class="page">
+      <div class="page-body">
+        <div class="section-header">
+          <div>
+            <div class="section-title">Catatan <span>Rapat</span></div>
+            <div class="section-sub">Notulen, dokumentasi, dan statistik rapat HIMAIF</div>
+          </div>
+          <div class="flex gap-2">
+            <button class="btn btn-ghost btn-sm" onclick="exportRapatCSV()">📥 Export CSV</button>
+            <button class="btn btn-primary btn-sm admin-only" style="display:none" onclick="openModal('add-rapat-modal')">+ Catat Rapat</button>
+          </div>
+        </div>
+        <div id="rapat-stats" class="mb-4"></div>
+        <div class="filter-bar flex-wrap mb-4">
+          <select class="form-control" style="width:auto;" id="rapat-filter-jenis" onchange="filterRapat()">
+            <option value="all">Semua Jenis</option>
+            <option value="Bulanan">Bulanan</option>
+            <option value="Mingguan">Mingguan</option>
+            <option value="Divisi">Divisi</option>
+            <option value="Besar">Besar</option>
+            <option value="Darurat">Darurat</option>
+            <option value="Evaluasi">Evaluasi</option>
+          </select>
+          <div class="search-input-wrap" style="max-width:220px;">
+            <span class="search-icon">🔍</span>
+            <input type="text" class="form-control" id="rapat-search" placeholder="Cari rapat..." oninput="filterRapat()" style="padding-left:30px;">
+          </div>
+        </div>
+        <div id="rapat-list"><div class="loading-wrap"><div class="spinner"></div></div></div>
+      </div>
+    </div>
+
+    <!-- ==================== PAGE: ASPIRASI ==================== -->
+    <div id="page-aspirasi" class="page">
+      <div class="page-body">
+        <div class="section-header">
+          <div>
+            <div class="section-title">Kotak <span>Aspirasi</span></div>
+            <div class="section-sub">Sampaikan kritik, saran, dan aspirasi secara anonim dan aman</div>
+          </div>
+        </div>
+        <!-- Submit Form — visible to all -->
+        <div class="card mb-6">
+          <div class="card-header"><span class="card-title">📢 Sampaikan Aspirasimu</span></div>
+          <div class="card-body">
+            <div class="info-box mb-4"><span>🔒</span><span>Identitasmu <strong>100% anonim</strong>. Tidak ada data pribadi yang disimpan bersama aspirasimu.</span></div>
+            <div class="form-row cols-2">
+              <div class="form-group">
+                <label class="form-label">Kategori</label>
+                <select class="form-control" id="asp-kategori">
+                  <option>Fasilitas</option><option>Akademik</option><option>Himpunan</option><option>Dosen</option><option>Lainnya</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Tingkat Urgensi</label>
+                <select class="form-control" id="asp-urgensi">
+                  <option value="rendah">🟢 Rendah</option>
+                  <option value="sedang" selected>🟡 Sedang</option>
+                  <option value="tinggi">🔴 Tinggi</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Pesan Aspirasi *</label>
+              <textarea class="form-control" id="asp-pesan" rows="5" placeholder="Tulis kritik, saran, keluhan, atau usulan dengan jelas dan sopan..."></textarea>
+              <div class="form-hint">Minimal 10 karakter.</div>
+            </div>
+            <button class="btn btn-primary" onclick="submitAspirasi()">📤 Kirim Aspirasi</button>
+          </div>
+        </div>
+        <!-- Incoming list — only pengurus/admin -->
+        <div id="asp-inbox-section" style="display:none;">
+          <div class="section-header">
+            <div><div class="section-title" style="font-size:19px;">Aspirasi <span>Masuk</span></div></div>
+            <div class="flex gap-2 flex-wrap">
+              <select class="form-control" style="width:auto;" id="asp-filter-status" onchange="filterAsp()">
+                <option value="all">Semua Status</option>
+                <option value="ditinjau">Ditinjau</option>
+                <option value="diproses">Diproses</option>
+                <option value="diterima">Diterima</option>
+                <option value="ditolak">Ditolak</option>
+              </select>
+              <select class="form-control" style="width:auto;" id="asp-filter-kat" onchange="filterAsp()">
+                <option value="all">Semua Kategori</option>
+                <option value="Fasilitas">Fasilitas</option>
+                <option value="Akademik">Akademik</option>
+                <option value="Himpunan">Himpunan</option>
+                <option value="Dosen">Dosen</option>
+                <option value="Lainnya">Lainnya</option>
+              </select>
+              <button class="btn btn-ghost btn-sm admin-only" style="display:none" onclick="exportAspirasiCSV()">📥 Export</button>
+            </div>
+          </div>
+          <div id="asp-list"><div class="loading-wrap"><div class="spinner"></div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== PAGE: DASHBOARD ==================== -->
+    <div id="page-dashboard" class="page">
+      <div class="page-body">
+        <div class="section-header">
+          <div>
+            <div class="section-title">📊 <span>Dashboard</span></div>
+            <div class="section-sub">Ringkasan statistik seluruh data HIMAIF secara real-time</div>
+          </div>
+          <button class="btn btn-ghost btn-sm" onclick="renderDashboard()">🔄 Refresh</button>
+        </div>
+        <div id="dashboard-content"><div class="loading-wrap"><div class="spinner"></div><div class="loading-text">Mengumpulkan data...</div></div></div>
+      </div>
+    </div>
+
+    <!-- ==================== PAGE: ADMIN ==================== -->
+    <div id="page-admin" class="page">
+      <div class="page-body">
+        <div class="section-header">
+          <div>
+            <div class="section-title">⚙️ Panel <span>Admin</span></div>
+            <div class="section-sub">Kelola seluruh konten dan data website HIMAIF</div>
+          </div>
+        </div>
+        <div id="admin-content"><div class="loading-wrap"><div class="spinner"></div></div></div>
+      </div>
+    </div>
+
+  </div><!-- /main-content -->
+</div><!-- /app-wrapper -->
+
+<!-- ================================================================
+     MODALS
+     ================================================================ -->
+
+<!-- LOGIN -->
+<div class="modal-overlay" id="login-modal">
+  <div class="modal" style="max-width:400px;">
+    <div class="modal-header">
+      <div class="modal-title">🔑 Login HIMAIF</div>
+      <button class="modal-close" onclick="closeModal('login-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="text-align:center;margin-bottom:24px;">
+        <div style="width:60px;height:60px;background:linear-gradient(135deg,var(--orange-dark),var(--orange));border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:26px;margin:0 auto 12px;box-shadow:0 4px 20px var(--orange-glow);">⚙️</div>
+        <div class="font-display" style="font-size:17px;font-weight:800;">HIMAIF</div>
+        <div class="text-muted text-sm mt-1">Login untuk mengakses fitur anggota dan admin</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Username</label>
+        <input type="text" class="form-control" id="login-username" placeholder="Masukkan username..." autocomplete="username">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input type="password" class="form-control" id="login-pwd" placeholder="Masukkan password..." autocomplete="current-password">
+        <div class="form-hint">Password dikelola admin, tersimpan di database.</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('login-modal')">Batal</button>
+      <button class="btn btn-primary" onclick="doLogin()">🔓 Login</button>
+    </div>
+  </div>
+</div>
+
+<!-- MEMBER DETAIL -->
+<div class="modal-overlay" id="member-modal">
+  <div class="modal" style="max-width:500px;">
+    <div class="modal-header">
+      <div class="modal-title">👤 Detail Anggota</div>
+      <button class="modal-close" onclick="closeModal('member-modal')">✕</button>
+    </div>
+    <div class="modal-body" id="member-modal-body"></div>
+    <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('member-modal')">Tutup</button></div>
+  </div>
+</div>
+
+<!-- ADD/EDIT PENGURUS -->
+<div class="modal-overlay" id="pengurus-modal">
+  <div class="modal" style="max-width:660px;">
+    <div class="modal-header">
+      <div class="modal-title" id="pengurus-modal-title">➕ Tambah Pengurus</div>
+      <button class="modal-close" onclick="closeModal('pengurus-modal')">✕</button>
+    </div>
+    <div class="modal-body" id="pengurus-modal-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('pengurus-modal')">Batal</button>
+      <button class="btn btn-primary" id="pengurus-modal-save">💾 Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD/EDIT PROKER -->
+<div class="modal-overlay" id="proker-modal">
+  <div class="modal" style="max-width:660px;">
+    <div class="modal-header">
+      <div class="modal-title" id="proker-modal-title">➕ Tambah Program Kerja</div>
+      <button class="modal-close" onclick="closeModal('proker-modal')">✕</button>
+    </div>
+    <div class="modal-body" id="proker-modal-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('proker-modal')">Batal</button>
+      <button class="btn btn-primary" id="proker-modal-save">💾 Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- RAPAT DETAIL -->
+<div class="modal-overlay" id="rapat-detail-modal">
+  <div class="modal" style="max-width:700px;">
+    <div class="modal-header">
+      <div class="modal-title" id="rapat-detail-title">📝 Detail Rapat</div>
+      <button class="modal-close" onclick="closeModal('rapat-detail-modal')">✕</button>
+    </div>
+    <div class="modal-body" id="rapat-detail-body"></div>
+    <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('rapat-detail-modal')">Tutup</button></div>
+  </div>
+</div>
+
+<!-- ADD RAPAT -->
+<div class="modal-overlay" id="add-rapat-modal">
+  <div class="modal" style="max-width:700px;">
+    <div class="modal-header">
+      <div class="modal-title" id="add-rapat-title">📝 Catat Rapat</div>
+      <button class="modal-close" onclick="closeModal('add-rapat-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group"><label class="form-label">Judul / Nama Rapat *</label><input type="text" class="form-control" id="r-judul" placeholder="Rapat Evaluasi Bulanan..."></div>
+      <div class="form-row cols-2">
+        <div class="form-group"><label class="form-label">Tanggal *</label><input type="date" class="form-control" id="r-tanggal"></div>
+        <div class="form-group"><label class="form-label">Jenis Rapat</label><select class="form-control" id="r-jenis"><option>Bulanan</option><option>Mingguan</option><option>Divisi</option><option>Besar</option><option>Darurat</option><option>Evaluasi</option></select></div>
+        <div class="form-group"><label class="form-label">Waktu Mulai</label><input type="time" class="form-control" id="r-mulai"></div>
+        <div class="form-group"><label class="form-label">Waktu Selesai</label><input type="time" class="form-control" id="r-selesai"></div>
+        <div class="form-group"><label class="form-label">Tempat</label><input type="text" class="form-control" id="r-tempat" placeholder="Ruang Himpunan Lt.3..."></div>
+        <div class="form-group"><label class="form-label">Pimpinan Rapat</label><input type="text" class="form-control" id="r-pimpinan" placeholder="Nama pimpinan..."></div>
+        <div class="form-group"><label class="form-label">Jumlah Hadir</label><input type="number" class="form-control" id="r-hadir" min="0" placeholder="0"></div>
+        <div class="form-group"><label class="form-label">Total Anggota</label><input type="number" class="form-control" id="r-total" min="0" placeholder="0"></div>
+        <div class="form-group"><label class="form-label">Notulis</label><input type="text" class="form-control" id="r-notulis" placeholder="Nama notulis..."></div>
+        <div class="form-group"><label class="form-label">Total Spontan (Rp)</label><input type="number" class="form-control" id="r-spontan" min="0" placeholder="0"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Agenda Rapat</label><textarea class="form-control" id="r-agenda" rows="2" placeholder="Daftar agenda yang dibahas..."></textarea></div>
+      <div class="form-group"><label class="form-label">Notulen / Isi Rapat</label><textarea class="form-control" id="r-notulen" rows="5" placeholder="Catatan lengkap isi rapat, poin diskusi, keputusan..."></textarea></div>
+      <div class="form-group"><label class="form-label">Kesimpulan</label><textarea class="form-control" id="r-kesimpulan" rows="2"></textarea></div>
+      <div class="form-group"><label class="form-label">Tindak Lanjut</label><textarea class="form-control" id="r-tindak" rows="2"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('add-rapat-modal')">Batal</button>
+      <button class="btn btn-primary" onclick="saveRapat()">💾 Simpan Catatan</button>
+    </div>
+  </div>
+</div>
+
+<!-- SUBMIT BLOG -->
+<div class="modal-overlay" id="submit-blog-modal">
+  <div class="modal" style="max-width:680px;">
+    <div class="modal-header">
+      <div class="modal-title">✍️ Tulis Artikel Tech Blog</div>
+      <button class="modal-close" onclick="closeModal('submit-blog-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="info-box mb-4"><span>ℹ️</span><span>Artikel akan direview admin sebelum dipublikasikan. Pastikan konten orisinal dan bermanfaat.</span></div>
+      <div class="form-group"><label class="form-label">Judul Artikel *</label><input type="text" class="form-control" id="b-judul" placeholder="Judul yang menarik dan deskriptif..."></div>
+      <div class="form-row cols-2">
+        <div class="form-group"><label class="form-label">Nama Penulis *</label><input type="text" class="form-control" id="b-penulis" placeholder="Nama lengkap..."></div>
+        <div class="form-group"><label class="form-label">Divisi / Asal</label><select class="form-control" id="b-divisi"><option>Akademik &amp; Keilmuan</option><option>Kominfo</option><option>PSDM</option><option>Mikat</option><option>Umum</option></select></div>
+        <div class="form-group"><label class="form-label">Emoji Artikel</label><input type="text" class="form-control" id="b-emoji" placeholder="📝" maxlength="4"></div>
+        <div class="form-group"><label class="form-label">Tags (pisah koma)</label><input type="text" class="form-control" id="b-tags" placeholder="AI, Python, Tutorial..."></div>
+      </div>
+      <div class="form-group"><label class="form-label">Isi Artikel *</label><textarea class="form-control" id="b-isi" rows="10" placeholder="Tulis artikel lengkap di sini..."></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('submit-blog-modal')">Batal</button>
+      <button class="btn btn-primary" onclick="submitBlog()">📤 Submit untuk Review</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD ACHIEVEMENT -->
+<div class="modal-overlay" id="add-ach-modal">
+  <div class="modal" style="max-width:540px;">
+    <div class="modal-header">
+      <div class="modal-title" id="ach-modal-title">🏆 Tambah Pencapaian</div>
+      <button class="modal-close" onclick="closeModal('add-ach-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group"><label class="form-label">Nama / Tim *</label><input type="text" class="form-control" id="a-nama" placeholder="Nama individu atau tim..."></div>
+      <div class="form-group"><label class="form-label">Prestasi *</label><input type="text" class="form-control" id="a-prestasi" placeholder="Deskripsi prestasi yang diraih..."></div>
+      <div class="form-row cols-2">
+        <div class="form-group"><label class="form-label">Kategori</label><input type="text" class="form-control" id="a-kategori" placeholder="Kompetisi, Riset, Akademik..."></div>
+        <div class="form-group"><label class="form-label">Level</label><select class="form-control" id="a-level"><option value="Prodi">Prodi</option><option value="Regional">Regional</option><option value="Nasional" selected>Nasional</option><option value="Internasional">Internasional</option></select></div>
+        <div class="form-group"><label class="form-label">Tanggal</label><input type="date" class="form-control" id="a-tanggal"></div>
+        <div class="form-group"><label class="form-label">Medal / Emoji</label><input type="text" class="form-control" id="a-medal" placeholder="🥇 🏆 📜 ⭐" maxlength="4"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('add-ach-modal')">Batal</button>
+      <button class="btn btn-primary" id="ach-modal-save" onclick="saveAchievement()">💾 Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD MATERI -->
+<div class="modal-overlay" id="add-materi-modal">
+  <div class="modal" style="max-width:580px;">
+    <div class="modal-header">
+      <div class="modal-title">📚 Upload Materi</div>
+      <button class="modal-close" onclick="closeModal('add-materi-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group"><label class="form-label">Judul *</label><input type="text" class="form-control" id="m-judul" placeholder="Judul materi..."></div>
+      <div class="form-row cols-2">
+        <div class="form-group"><label class="form-label">Kategori</label><select class="form-control" id="m-kategori"><option>Modul Praktikum</option><option>E-Book</option><option>Paper/Jurnal</option><option>Tutorial</option><option>Referensi</option></select></div>
+        <div class="form-group"><label class="form-label">Ikon Emoji</label><input type="text" class="form-control" id="m-icon" placeholder="📄" maxlength="4"></div>
+        <div class="form-group"><label class="form-label">Ukuran File</label><input type="text" class="form-control" id="m-ukuran" placeholder="2.4 MB..."></div>
+        <div class="form-group"><label class="form-label">Diupload Oleh</label><input type="text" class="form-control" id="m-uploader" placeholder="Nama / divisi..."></div>
+      </div>
+      <div class="form-group"><label class="form-label">Deskripsi</label><textarea class="form-control" id="m-desc" rows="3" placeholder="Deskripsi singkat..."></textarea></div>
+      <div class="form-group"><label class="form-label">Tags (pisah koma)</label><input type="text" class="form-control" id="m-tags" placeholder="Python, AI, Machine Learning..."></div>
+      <div class="form-group"><label class="form-label">URL File</label><input type="url" class="form-control" id="m-url" placeholder="https://..."></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('add-materi-modal')">Batal</button>
+      <button class="btn btn-primary" onclick="saveMateri()">💾 Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD PROJECT -->
+<div class="modal-overlay" id="add-project-modal">
+  <div class="modal" style="max-width:620px;">
+    <div class="modal-header">
+      <div class="modal-title">💡 Submit Project</div>
+      <button class="modal-close" onclick="closeModal('add-project-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group"><label class="form-label">Nama Project *</label><input type="text" class="form-control" id="p-nama" placeholder="Nama project..."></div>
+      <div class="form-row cols-2">
+        <div class="form-group"><label class="form-label">Pembuat *</label><input type="text" class="form-control" id="p-pembuat" placeholder="Nama / tim..."></div>
+        <div class="form-group"><label class="form-label">Angkatan</label><input type="number" class="form-control" id="p-angkatan" placeholder="2021..." min="2015" max="2030"></div>
+        <div class="form-group"><label class="form-label">Kategori</label><select class="form-control" id="p-kategori"><option>Mobile App</option><option>Web App</option><option>AI/ML</option><option>Game</option><option>UI/UX</option><option>Desktop</option><option>Lainnya</option></select></div>
+        <div class="form-group"><label class="form-label">Ikon Emoji</label><input type="text" class="form-control" id="p-icon" placeholder="💻" maxlength="4"></div>
+        <div class="form-group"><label class="form-label">URL Demo</label><input type="url" class="form-control" id="p-demo" placeholder="https://..."></div>
+        <div class="form-group"><label class="form-label">URL GitHub</label><input type="url" class="form-control" id="p-repo" placeholder="https://github.com/..."></div>
+      </div>
+      <div class="form-group"><label class="form-label">Deskripsi</label><textarea class="form-control" id="p-desc" rows="3" placeholder="Deskripsi singkat project..."></textarea></div>
+      <div class="form-group"><label class="form-label">Tech Stack (pisah koma)</label><input type="text" class="form-control" id="p-tags" placeholder="Flutter, Firebase, Dart..."></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('add-project-modal')">Batal</button>
+      <button class="btn btn-primary" onclick="saveProject()">📤 Submit Project</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD LPJ -->
+<div class="modal-overlay" id="add-lpj-modal">
+  <div class="modal" style="max-width:540px;">
+    <div class="modal-header">
+      <div class="modal-title">📄 Tambah LPJ</div>
+      <button class="modal-close" onclick="closeModal('add-lpj-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group"><label class="form-label">Judul LPJ *</label><input type="text" class="form-control" id="lpj-judul" placeholder="Judul LPJ..."></div>
+      <div class="form-row cols-2">
+        <div class="form-group"><label class="form-label">Periode *</label><select class="form-control" id="lpj-periode"><option value="2025/2026">2025/2026</option><option value="2024/2025">2024/2025</option><option value="2023/2024">2023/2024</option><option value="2022/2023">2022/2023</option><option value="2021/2022">2021/2022</option></select></div>
+        <div class="form-group"><label class="form-label">Divisi</label><select class="form-control" id="lpj-divisi"><option value="Semua Divisi">Semua Divisi</option><option>Inti</option><option>Akademik &amp; Keilmuan</option><option>PSDM</option><option>Kominfo</option><option>Mikat</option><option>Hubungan Masyarakat</option><option>Kewirausahaan</option></select></div>
+        <div class="form-group"><label class="form-label">Tanggal</label><input type="date" class="form-control" id="lpj-tanggal"></div>
+        <div class="form-group"><label class="form-label">Ukuran File</label><input type="text" class="form-control" id="lpj-ukuran" placeholder="2.4 MB..."></div>
+      </div>
+      <div class="form-group"><label class="form-label">Deskripsi</label><textarea class="form-control" id="lpj-desc" rows="3"></textarea></div>
+      <div class="form-group"><label class="form-label">URL File (Google Drive / Supabase)</label><input type="url" class="form-control" id="lpj-url" placeholder="https://..."></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('add-lpj-modal')">Batal</button>
+      <button class="btn btn-primary" onclick="saveLPJ()">💾 Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD BERITA -->
+<div class="modal-overlay" id="add-berita-modal">
+  <div class="modal" style="max-width:620px;">
+    <div class="modal-header">
+      <div class="modal-title" id="berita-modal-title">📰 Tambah Berita</div>
+      <button class="modal-close" onclick="closeModal('add-berita-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group"><label class="form-label">Judul Berita *</label><input type="text" class="form-control" id="bn-judul" placeholder="Judul berita..."></div>
+      <div class="form-row cols-2">
+        <div class="form-group"><label class="form-label">Kategori</label><select class="form-control" id="bn-kategori"><option>Event</option><option>Prestasi</option><option>Akademik</option><option>Kegiatan</option><option>Pengumuman</option><option>Umum</option></select></div>
+        <div class="form-group"><label class="form-label">Emoji / Ikon</label><input type="text" class="form-control" id="bn-emoji" placeholder="📰" maxlength="4"></div>
+        <div class="form-group"><label class="form-label">Penulis</label><input type="text" class="form-control" id="bn-penulis" placeholder="Admin HIMAIF..."></div>
+        <div class="form-group"><label class="form-label">Featured?</label><div style="display:flex;align-items:center;gap:10px;margin-top:10px;"><input type="checkbox" id="bn-featured" style="width:16px;height:16px;accent-color:var(--orange);"><label for="bn-featured" class="text-sm text-muted">Tampilkan sebagai berita utama</label></div></div>
+      </div>
+      <div class="form-group"><label class="form-label">Ringkasan (Excerpt)</label><textarea class="form-control" id="bn-excerpt" rows="3" placeholder="Ringkasan singkat..."></textarea></div>
+      <div class="form-group"><label class="form-label">Konten Lengkap</label><textarea class="form-control" id="bn-konten" rows="6" placeholder="Isi berita lengkap..."></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('add-berita-modal')">Batal</button>
+      <button class="btn btn-primary" id="berita-modal-save" onclick="saveBerita()">💾 Publish</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD/EDIT USER -->
+<div class="modal-overlay" id="add-user-modal">
+  <div class="modal" style="max-width:460px;">
+    <div class="modal-header">
+      <div class="modal-title" id="user-modal-title">👤 Tambah User</div>
+      <button class="modal-close" onclick="closeModal('add-user-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group"><label class="form-label">Username *</label><input type="text" class="form-control" id="u-username" placeholder="Username baru..."></div>
+      <div class="form-group"><label class="form-label">Password *</label><input type="password" class="form-control" id="u-password" placeholder="Minimal 6 karakter..."></div>
+      <div class="form-group"><label class="form-label">Nama Tampilan</label><input type="text" class="form-control" id="u-display" placeholder="Nama yang ditampilkan..."></div>
+      <div class="form-group"><label class="form-label">Role</label><select class="form-control" id="u-role"><option value="pengurus">🎓 Pengurus</option><option value="admin">👑 Admin</option><option value="user">👤 User Biasa</option></select></div>
+      <div class="info-box mt-2"><span>ℹ️</span><span><strong>Admin</strong> = akses penuh. <strong>Pengurus</strong> = lihat halaman organisasi. <strong>User</strong> = akses publik saja.</span></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('add-user-modal')">Batal</button>
+      <button class="btn btn-primary" id="user-modal-save" onclick="saveUser()">💾 Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- CHANGE PASSWORD -->
+<div class="modal-overlay" id="change-pwd-modal">
+  <div class="modal" style="max-width:400px;">
+    <div class="modal-header">
+      <div class="modal-title">🔑 Ganti Password</div>
+      <button class="modal-close" onclick="closeModal('change-pwd-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="info-box mb-4"><span>👤</span><span>Ganti password untuk: <strong id="cp-username-label">—</strong></span></div>
+      <div class="form-group"><label class="form-label">Password Baru *</label><input type="password" class="form-control" id="cp-new-pwd" placeholder="Minimal 6 karakter..."></div>
+      <div class="form-group"><label class="form-label">Konfirmasi Password</label><input type="password" class="form-control" id="cp-confirm-pwd" placeholder="Ulangi password..."></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('change-pwd-modal')">Batal</button>
+      <button class="btn btn-primary" id="cp-save-btn">💾 Simpan Password</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD KEGIATAN -->
+<div class="modal-overlay" id="add-kegiatan-modal">
+  <div class="modal" style="max-width:560px;">
+    <div class="modal-header">
+      <div class="modal-title">📸 Tambah Kegiatan</div>
+      <button class="modal-close" onclick="closeModal('add-kegiatan-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group"><label class="form-label">Judul Kegiatan *</label><input type="text" class="form-control" id="kg-judul" placeholder="Nama kegiatan..."></div>
+      <div class="form-row cols-2">
+        <div class="form-group"><label class="form-label">Divisi</label><select class="form-control" id="kg-divisi"><option value="">Semua/Umum</option><option>Inti</option><option>Akademik &amp; Keilmuan</option><option>PSDM</option><option>Kominfo</option><option>Mikat</option><option>Hubungan Masyarakat</option><option>Kewirausahaan</option></select></div>
+        <div class="form-group"><label class="form-label">Periode</label><select class="form-control" id="kg-periode"><option>2025/2026</option><option>2024/2025</option><option>2023/2024</option><option>2022/2023</option></select></div>
+        <div class="form-group"><label class="form-label">Tanggal</label><input type="date" class="form-control" id="kg-tanggal"></div>
+        <div class="form-group"><label class="form-label">Emoji</label><input type="text" class="form-control" id="kg-emoji" placeholder="📸" maxlength="4"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Deskripsi</label><textarea class="form-control" id="kg-desc" rows="3"></textarea></div>
+      <div class="form-group"><label class="form-label">Ada LPJ?</label><div style="display:flex;align-items:center;gap:10px;margin-top:8px;"><input type="checkbox" id="kg-lpj" style="width:16px;height:16px;accent-color:var(--orange);"><label for="kg-lpj" class="text-sm text-muted">Kegiatan ini memiliki LPJ</label></div></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('add-kegiatan-modal')">Batal</button>
+      <button class="btn btn-primary" onclick="saveKegiatan()">💾 Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- BLOG DETAIL -->
+<div class="modal-overlay" id="blog-detail-modal">
+  <div class="modal" style="max-width:720px;">
+    <div class="modal-header">
+      <div class="modal-title" id="blog-detail-title">📝 Artikel</div>
+      <button class="modal-close" onclick="closeModal('blog-detail-modal')">✕</button>
+    </div>
+    <div class="modal-body" id="blog-detail-body"></div>
+    <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('blog-detail-modal')">Tutup</button></div>
+  </div>
+</div>
+
+<!-- ================================================================
+     SCRIPTS
+     ================================================================ -->
+<script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js"
+  onerror="var s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js';document.head.appendChild(s);">
+</script>
+<script src="js/db.js"></script>
+<script src="js/core.js"></script>
+<script src="js/pages1.js"></script>
+<script src="js/pages2.js"></script>
+<script src="js/pages3.js"></script>
+<script>
+// ============================================================
+// APP BOOTSTRAP
+// ============================================================
+(async function init() {
+  try { await initSettings(); }
+  catch(e) { console.warn('[HIMAIF] DB not available, using defaults:', e.message); }
+
+  updateSidebar();
+  updateTopbar();
+  applyAdminUI();
+
+  // Mobile menu
+  document.getElementById('menu-toggle')?.addEventListener('click', () => {
+    document.getElementById('sidebar').classList.add('open');
+    document.getElementById('sidebar-overlay').classList.add('show');
+    document.body.style.overflow = 'hidden';
+  });
+  document.getElementById('sidebar-overlay')?.addEventListener('click', closeSidebar);
+
+  // Close modals on backdrop click
+  document.querySelectorAll('.modal-overlay').forEach(el => {
+    el.addEventListener('click', e => { if (e.target === el) closeModal(el.id); });
+  });
+
+  // Login on Enter
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Enter') {
+      const m = document.getElementById('login-modal');
+      if (m?.classList.contains('open')) doLogin();
+    }
+    if (e.key === 'Escape') {
+      document.querySelectorAll('.modal-overlay.open').forEach(m => closeModal(m.id));
+    }
+  });
+
+  navigate('home');
+})();
+</script>
+</body>
+</html>

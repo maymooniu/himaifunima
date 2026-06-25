@@ -1,0 +1,531 @@
+// =============================================================
+// HIMAIF v2 — Core: State, Auth, Navigation, Utilities
+// =============================================================
+
+// ============================================================
+// GLOBAL STATE
+// ============================================================
+const STATE = {
+  role:          'public',      // 'public' | 'pengurus' | 'admin'
+  username:      '',
+  displayName:   '',
+  activePeriode: '2024/2025',
+  settings:      {},
+  activePage:    'home',
+};
+
+const DIVISI_LIST = [
+  'Inti',
+  'Akademik & Keilmuan',
+  'PSDM',
+  'Kominfo',
+  'Mikat',
+  'Hubungan Masyarakat',
+  'Kewirausahaan',
+];
+
+// Pages accessible by role
+const PAGE_ACCESS = {
+  home:        ['public','pengurus','admin'],
+  about:       ['public','pengurus','admin'],
+  pengurus:    ['public','pengurus','admin'],
+  achievement: ['public','pengurus','admin'],
+  materi:      ['public','pengurus','admin'],
+  projects:    ['public','pengurus','admin'],
+  blog:        ['public','pengurus','admin'],
+  aspirasi:    ['public','pengurus','admin'],
+  // organisasi - pengurus+ only
+  arsip:       ['pengurus','admin'],
+  proker:      ['pengurus','admin'],
+  rapat:       ['pengurus','admin'],
+  dashboard:   ['pengurus','admin'],
+  // admin only
+  admin:       ['admin'],
+};
+
+// ============================================================
+// INIT SETTINGS
+// ============================================================
+async function initSettings() {
+  try {
+    STATE.settings = await DB.getSettings();
+    if (STATE.settings.periode_aktif) {
+      STATE.activePeriode = STATE.settings.periode_aktif;
+      const periodeSelect = document.getElementById('pengurus-periode');
+      if (periodeSelect) periodeSelect.value = STATE.activePeriode;
+    }
+    // Apply logo
+    const logo = STATE.settings.logo_url;
+    if (logo) {
+      const logoEl = document.getElementById('sidebar-logo');
+      if (logoEl) {
+        logoEl.className = 'sidebar-logo';
+        logoEl.innerHTML = `<img src="${logo}" alt="HIMAIF Logo" onerror="this.parentElement.className='sidebar-logo-fallback';this.parentElement.innerHTML='⚙️'">`;
+      }
+    }
+  } catch(e) {
+    console.warn('[HIMAIF] Settings load failed:', e.message);
+  }
+}
+
+// ============================================================
+// AUTH
+// ============================================================
+async function doLogin() {
+  const username = (document.getElementById('login-username')?.value || '').trim().toLowerCase();
+  const password  = document.getElementById('login-pwd')?.value || '';
+
+  if (!username || !password) { showToast('Username dan password wajib diisi!', 'error'); return; }
+
+  const loginBtn = document.querySelector('#login-modal .btn-primary');
+  if (loginBtn) { loginBtn.disabled = true; loginBtn.textContent = 'Memeriksa...'; }
+
+  try {
+    const user = await DB_AUTH.login(username, password);
+    if (!user) {
+      showToast('Username atau password salah!', 'error');
+      return;
+    }
+    STATE.role        = user.role;
+    STATE.username    = user.username;
+    STATE.displayName = user.display_name || user.username;
+    closeModal('login-modal');
+    updateTopbar();
+    updateSidebar();
+    applyAdminUI();
+    showToast(`Selamat datang, ${STATE.displayName}! 👋`, 'success');
+    navigate('home');
+  } catch(e) {
+    showToast('Gagal login: ' + e.message, 'error');
+  } finally {
+    if (loginBtn) { loginBtn.disabled = false; loginBtn.textContent = '🔓 Login'; }
+  }
+}
+
+function doLogout() {
+  STATE.role        = 'public';
+  STATE.username    = '';
+  STATE.displayName = '';
+  updateTopbar();
+  updateSidebar();
+  applyAdminUI();
+  showToast('Berhasil logout. Sampai jumpa!', 'info');
+  navigate('home');
+}
+
+function isAdmin()    { return STATE.role === 'admin'; }
+function isPengurus() { return STATE.role === 'pengurus' || STATE.role === 'admin'; }
+
+function canAccess(page) {
+  const allowed = PAGE_ACCESS[page] || ['admin'];
+  return allowed.includes(STATE.role);
+}
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+function navigate(page) {
+  if (!canAccess(page)) {
+    showToast('Halaman ini memerlukan login terlebih dahulu.', 'warning');
+    openModal('login-modal');
+    return;
+  }
+
+  // Deactivate all pages
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+
+  // Activate target page
+  const el = document.getElementById('page-' + page);
+  if (el) el.classList.add('active');
+  else { console.warn('[HIMAIF] Page not found:', page); return; }
+
+  STATE.activePage = page;
+
+  // Update sidebar active state
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.querySelector(`.nav-item[data-page="${page}"]`)?.classList.add('active');
+
+  // Update topbar title
+  const titles = {
+    home: '🏠 Beranda', about: 'ℹ️ Tentang',
+    pengurus: '👥 Data Pengurus', arsip: '📁 Arsip & LPJ',
+    proker: '📋 Program Kerja', achievement: '🏆 Pencapaian',
+    materi: '📚 Bank Materi', projects: '💡 Galeri Project',
+    blog: '✍️ Tech Blog', rapat: '📝 Catatan Rapat',
+    aspirasi: '📢 Kotak Aspirasi', dashboard: '📊 Dashboard',
+    admin: '⚙️ Panel Admin',
+  };
+  document.getElementById('topbar-title').textContent = titles[page] || page;
+
+  // Close mobile sidebar
+  closeSidebar();
+
+  // Load page content
+  _renderPage(page);
+}
+
+function _renderPage(page) {
+  switch(page) {
+    case 'home':        renderHome();        break;
+    case 'about':       renderAbout();       break;
+    case 'pengurus':    renderPengurus();    break;
+    case 'arsip':       renderArsip();       break;
+    case 'proker':      renderProker();      break;
+    case 'achievement': renderAchievement(); break;
+    case 'materi':      renderMateri();      break;
+    case 'projects':    renderProjects();    break;
+    case 'blog':        renderBlog();        break;
+    case 'rapat':       renderRapat();       break;
+    case 'aspirasi':    renderAspirasi();    break;
+    case 'dashboard':   renderDashboard();   break;
+    case 'admin':       renderAdmin();       break;
+  }
+}
+
+// ============================================================
+// SIDEBAR
+// ============================================================
+function updateSidebar() {
+  const nav = document.getElementById('sidebar-nav');
+  if (!nav) return;
+
+  const role = STATE.role;
+  const isP  = isPengurus();
+  const isA  = isAdmin();
+
+  let html = '';
+
+  // PUBLIC section
+  html += `<div class="sidebar-section">
+    <div class="sidebar-label">Umum</div>
+    <button class="nav-item" data-page="home"        onclick="navigate('home')">        <span class="nav-icon">🏠</span> Beranda</button>
+    <button class="nav-item" data-page="about"       onclick="navigate('about')">       <span class="nav-icon">ℹ️</span> Tentang HIMAIF</button>
+    <button class="nav-item" data-page="pengurus"    onclick="navigate('pengurus')">    <span class="nav-icon">👥</span> Data Pengurus</button>
+    <button class="nav-item" data-page="achievement" onclick="navigate('achievement')"> <span class="nav-icon">🏆</span> Pencapaian</button>
+    <button class="nav-item" data-page="materi"      onclick="navigate('materi')">      <span class="nav-icon">📚</span> Bank Materi</button>
+    <button class="nav-item" data-page="projects"    onclick="navigate('projects')">    <span class="nav-icon">💡</span> Galeri Project</button>
+    <button class="nav-item" data-page="blog"        onclick="navigate('blog')">        <span class="nav-icon">✍️</span> Tech Blog</button>
+    <button class="nav-item" data-page="aspirasi"    onclick="navigate('aspirasi')">    <span class="nav-icon">📢</span> Kotak Aspirasi</button>
+  </div>`;
+
+  // PENGURUS section
+  if (isP) {
+    html += `<div class="sidebar-section">
+      <div class="sidebar-label">Organisasi</div>
+      <button class="nav-item" data-page="arsip"    onclick="navigate('arsip')">    <span class="nav-icon">📁</span> Arsip &amp; LPJ</button>
+      <button class="nav-item" data-page="proker"   onclick="navigate('proker')">   <span class="nav-icon">📋</span> Program Kerja</button>
+      <button class="nav-item" data-page="rapat"    onclick="navigate('rapat')">    <span class="nav-icon">📝</span> Catatan Rapat</button>
+      <button class="nav-item" data-page="dashboard"onclick="navigate('dashboard')"><span class="nav-icon">📊</span> Dashboard</button>
+    </div>`;
+  }
+
+  // ADMIN section
+  if (isA) {
+    html += `<div class="sidebar-section">
+      <div class="sidebar-label">Admin</div>
+      <button class="nav-item" data-page="admin" onclick="navigate('admin')"><span class="nav-icon">⚙️</span> Panel Admin</button>
+    </div>`;
+  }
+
+  nav.innerHTML = html;
+
+  // Re-apply active state
+  document.querySelector(`.nav-item[data-page="${STATE.activePage}"]`)?.classList.add('active');
+}
+
+// ============================================================
+// TOPBAR
+// ============================================================
+function updateTopbar() {
+  const rightEl = document.getElementById('topbar-right');
+  if (!rightEl) return;
+
+  if (STATE.role === 'public') {
+    rightEl.innerHTML = `
+      <div class="search-wrap" style="position:relative;">
+        <span style="position:absolute;left:11px;color:var(--text-dim);font-size:14px;">🔍</span>
+        <input type="text" placeholder="Cari halaman..." id="global-search" style="padding-left:32px;background:none;border:none;outline:none;color:var(--text);font-size:13px;width:160px;" autocomplete="off">
+      </div>
+      <div class="user-pill login-btn" onclick="openModal('login-modal')">🔑 Login</div>`;
+  } else {
+    const roleLabel = isAdmin() ? '👑 Admin' : '🎓 Pengurus';
+    const roleColor = isAdmin() ? 'var(--orange)' : 'var(--teal-light)';
+    rightEl.innerHTML = `
+      <div class="search-wrap" style="position:relative;">
+        <span style="position:absolute;left:11px;color:var(--text-dim);font-size:14px;">🔍</span>
+        <input type="text" placeholder="Cari halaman..." id="global-search" style="padding-left:32px;background:none;border:none;outline:none;color:var(--text);font-size:13px;width:160px;" autocomplete="off">
+      </div>
+      <div class="user-pill" onclick="doLogout()" title="Klik untuk logout">
+        <div class="user-dot"></div>
+        <span style="color:${roleColor};font-size:11px;">${roleLabel}</span>
+        <span class="text-sm font-bold">${escapeHtml(STATE.displayName || STATE.username)}</span>
+        <span style="color:var(--text-dim);font-size:11px;">↩ Logout</span>
+      </div>`;
+  }
+}
+
+// ============================================================
+// ADMIN UI
+// ============================================================
+function applyAdminUI() {
+  const adminOnlyEls = document.querySelectorAll('.admin-only');
+  adminOnlyEls.forEach(el => {
+    el.style.display = isAdmin() ? '' : 'none';
+  });
+  // Aspirasi inbox - pengurus+
+  const aspInbox = document.getElementById('asp-inbox-section');
+  if (aspInbox) aspInbox.style.display = isPengurus() ? '' : 'none';
+  // Blog filter
+  const blogFilterAll = document.querySelector('#blog-filter-status option[value="all"]');
+  if (blogFilterAll) blogFilterAll.style.display = isAdmin() ? '' : 'none';
+}
+
+// ============================================================
+// MOBILE SIDEBAR
+// ============================================================
+function closeSidebar() {
+  document.getElementById('sidebar')?.classList.remove('open');
+  document.getElementById('sidebar-overlay')?.classList.remove('show');
+  document.body.style.overflow = '';
+}
+
+// ============================================================
+// TAB SWITCHER (generic)
+// ============================================================
+function switchTab(groupId, tabId, btn) {
+  const prefix = `${groupId}-tab-`;
+  // Deactivate all tab contents for this group
+  document.querySelectorAll(`[id^="${prefix}"]`).forEach(el => el.classList.remove('active'));
+  // Activate selected
+  document.getElementById(prefix + tabId)?.classList.add('active');
+  // Update tab buttons
+  if (btn) {
+    btn.closest('.tabs')?.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+}
+
+// ============================================================
+// MODAL HELPERS
+// ============================================================
+function openModal(id) {
+  const el = document.getElementById(id);
+  if (el) {
+    el.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+}
+function closeModal(id) {
+  const el = document.getElementById(id);
+  if (el) {
+    el.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+}
+
+// ============================================================
+// TOAST
+// ============================================================
+function showToast(msg, type = 'info', duration = 3500) {
+  const container = document.getElementById('toast-container');
+  if (!container) return;
+  const icons = { success:'✅', error:'❌', warning:'⚠️', info:'ℹ️' };
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.innerHTML = `<span>${icons[type] || 'ℹ️'}</span><span style="flex:1;">${msg}</span>`;
+  container.appendChild(toast);
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateX(110%)';
+    setTimeout(() => toast.remove(), 320);
+  }, duration);
+}
+
+// ============================================================
+// LOADING STATE HELPER
+// ============================================================
+function setLoading(elId, show = true, msg = 'Memuat...') {
+  const el = document.getElementById(elId);
+  if (!el) return;
+  if (show) el.innerHTML = `<div class="loading-wrap"><div class="spinner"></div><div class="loading-text">${msg}</div></div>`;
+}
+
+// ============================================================
+// EMPTY STATE HELPER
+// ============================================================
+function emptyState(icon, title, desc, action = '') {
+  return `<div class="empty-state">
+    <div class="empty-icon">${icon}</div>
+    <div class="empty-title">${title}</div>
+    <div class="empty-desc">${desc}</div>
+    ${action ? `<div style="margin-top:16px;">${action}</div>` : ''}
+  </div>`;
+}
+
+// ============================================================
+// UTILITY FUNCTIONS
+// ============================================================
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+function initials(name) {
+  if (!name) return '?';
+  const parts = name.trim().split(/\s+/);
+  if (parts.length === 1) return parts[0].slice(0,2).toUpperCase();
+  return (parts[0][0] + parts[parts.length-1][0]).toUpperCase();
+}
+
+function formatDate(d) {
+  if (!d) return '—';
+  try {
+    return new Date(d).toLocaleDateString('id-ID', { day:'numeric', month:'long', year:'numeric' });
+  } catch { return d; }
+}
+
+function formatDateShort(d) {
+  if (!d) return '—';
+  try {
+    return new Date(d).toLocaleDateString('id-ID', { day:'2-digit', month:'short', year:'numeric' });
+  } catch { return d; }
+}
+
+function formatDateCompact(d) {
+  if (!d) return '—';
+  try {
+    const dt = new Date(d);
+    return {
+      day: dt.toLocaleDateString('id-ID', { day: '2-digit' }),
+      mon: dt.toLocaleDateString('id-ID', { month: 'short' }),
+      year: dt.getFullYear(),
+    };
+  } catch { return { day:'--', mon:'---', year:'----' }; }
+}
+
+function formatCurrency(n) {
+  if (!n && n !== 0) return 'Rp 0';
+  if (n >= 1_000_000_000) return `Rp ${(n/1_000_000_000).toFixed(1)}M`;
+  if (n >= 1_000_000)     return `Rp ${(n/1_000_000).toFixed(1)}Jt`;
+  if (n >= 1_000)         return `Rp ${(n/1_000).toFixed(0)}K`;
+  return `Rp ${n.toLocaleString('id-ID')}`;
+}
+
+function getStatusBadge(status) {
+  const map = {
+    aktif:           ['badge-blue',   '⏳ Belum Dimulai'],
+    sedang_berjalan: ['badge-amber',  '⚡ Berjalan'],
+    selesai:         ['badge-green',  '✅ Selesai'],
+    dibatalkan:      ['badge-red',    '❌ Dibatalkan'],
+    published:       ['badge-green',  '✅ Published'],
+    pending:         ['badge-amber',  '⏳ Pending'],
+    ditolak:         ['badge-red',    '❌ Ditolak'],
+    ditinjau:        ['badge-blue',   '🔍 Ditinjau'],
+    diproses:        ['badge-amber',  '⚙️ Diproses'],
+    diterima:        ['badge-green',  '✅ Diterima'],
+    rejected:        ['badge-red',    '❌ Ditolak'],
+    approved:        ['badge-green',  '✅ Approved'],
+  };
+  const [cls, label] = map[status] || ['badge-gray', status || '—'];
+  return `<span class="badge ${cls}">${label}</span>`;
+}
+
+function getLevelBadge(level) {
+  const map = {
+    Prodi:           'badge-blue',
+    Regional:        'badge-teal',
+    Nasional:        'badge-orange',
+    Internasional:   'badge-purple',
+  };
+  return `<span class="badge ${map[level] || 'badge-gray'}">🌐 ${level}</span>`;
+}
+
+function timeAgo(dateStr) {
+  if (!dateStr) return '—';
+  const diff = (Date.now() - new Date(dateStr).getTime()) / 1000;
+  if (diff < 60)   return 'Baru saja';
+  if (diff < 3600) return `${Math.floor(diff/60)} menit lalu`;
+  if (diff < 86400)return `${Math.floor(diff/3600)} jam lalu`;
+  if (diff < 2592000) return `${Math.floor(diff/86400)} hari lalu`;
+  return formatDateShort(dateStr);
+}
+
+// ============================================================
+// EXPORT CSV
+// ============================================================
+function exportToCSV(headers, rows, filename) {
+  const csvContent = [
+    headers.join(','),
+    ...rows.map(row => row.map(v => `"${String(v||'').replace(/"/g,'""')}"`).join(',')),
+  ].join('\n');
+  const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url; a.download = `${filename}-${new Date().toISOString().slice(0,10)}.csv`;
+  a.click(); URL.revokeObjectURL(url);
+}
+
+async function exportPengurusCSV(periode) {
+  try {
+    const data = await DB.getPengurus(periode || STATE.activePeriode);
+    exportToCSV(
+      ['Nama','NIM','Divisi','Jabatan','Semester','Tanggal Lahir','Periode'],
+      data.map(m => [m.nama, m.nim, m.divisi, m.jabatan, m.semester, m.tanggal_lahir, m.periode]),
+      'pengurus-himaif'
+    );
+    showToast('Export CSV berhasil!', 'success');
+  } catch(e) { showToast('Gagal export: ' + e.message, 'error'); }
+}
+
+async function exportProkerCSV() {
+  try {
+    const data = await DB.getProker(STATE.activePeriode);
+    exportToCSV(
+      ['Nama','Divisi','Ketua','Status','Progress (%)','Target','Anggaran','Deskripsi'],
+      data.map(p => [p.nama, p.divisi, p.ketua, p.status, p.progress, p.target_tanggal, p.anggaran, p.deskripsi]),
+      'proker-himaif'
+    );
+    showToast('Export CSV berhasil!', 'success');
+  } catch(e) { showToast('Gagal export: ' + e.message, 'error'); }
+}
+
+async function exportRapatCSV() {
+  try {
+    const data = await DB.getRapat();
+    exportToCSV(
+      ['Judul','Tanggal','Jenis','Tempat','Hadir','Total','Pimpinan','Notulis'],
+      data.map(r => [r.judul, r.tanggal, r.jenis, r.tempat, r.jumlah_hadir, r.jumlah_total, r.pimpinan_rapat, r.notulis]),
+      'rapat-himaif'
+    );
+    showToast('Export CSV berhasil!', 'success');
+  } catch(e) { showToast('Gagal export: ' + e.message, 'error'); }
+}
+
+async function exportPencapaianCSV() {
+  try {
+    const data = await DB.getPencapaian();
+    exportToCSV(
+      ['Nama/Tim','Prestasi','Kategori','Level','Tanggal'],
+      data.map(p => [p.nama, p.prestasi, p.kategori, p.level, p.tanggal]),
+      'pencapaian-himaif'
+    );
+    showToast('Export CSV berhasil!', 'success');
+  } catch(e) { showToast('Gagal export: ' + e.message, 'error'); }
+}
+
+async function exportAspirasiCSV() {
+  try {
+    const data = await DB.getAspirasi();
+    exportToCSV(
+      ['Kategori','Pesan','Status','Tanggal'],
+      data.map(a => [a.kategori, a.pesan, a.status, a.created_at]),
+      'aspirasi-himaif'
+    );
+    showToast('Export CSV berhasil!', 'success');
+  } catch(e) { showToast('Gagal export: ' + e.message, 'error'); }
+}
