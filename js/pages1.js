@@ -297,7 +297,7 @@ async function renderPengurus() {
     renderPengurusList(_pengurusData);
   } catch(e) {
     document.getElementById('org-chart-wrap').innerHTML = emptyState('⚠️', 'Gagal memuat', e.message);
-    document.getElementById('pengurus-table-body').innerHTML = '';
+    if (document.getElementById('pengurus-table-body')) document.getElementById('pengurus-table-body').innerHTML = '';
     showToast('Gagal memuat data pengurus: ' + e.message, 'error');
   }
 }
@@ -339,15 +339,6 @@ function orgCardHtml(m, isInti) {
     <div class="org-name">${escapeHtml(m.nama.split(' ')[0])}</div>
     <div class="org-role">${escapeHtml(m.jabatan)}</div>
     ${showDiv ? `<div class="org-div">${escapeHtml(m.divisi)}</div>` : ''}
-    <div class="org-tooltip">
-      <h4>${escapeHtml(m.nama)}</h4>
-      <p>📋 ${escapeHtml(m.jabatan)}${showDiv ? ' — ' + escapeHtml(m.divisi) : ''}</p>
-      <p>🎓 NIM: <span style="font-family:var(--font-mono)">${m.nim}</span></p>
-      <p>📚 Semester ${m.semester}</p>
-      ${m.bio ? `<p style="margin-top:6px;font-style:italic;color:var(--text-dim);font-size:11px;">"${escapeHtml(m.bio)}"</p>` : ''}
-      ${m.linkedin_url ? `<p style="color:var(--blue-xlight);font-size:11px;">🔗 LinkedIn tersedia</p>` : ''}
-      <p style="margin-top:8px;color:var(--orange);font-size:10px;font-weight:700;">KLIK UNTUK DETAIL →</p>
-    </div>
   </div>`;
 }
 

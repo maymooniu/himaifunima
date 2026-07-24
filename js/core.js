@@ -124,7 +124,7 @@ function canAccess(page) {
 // ============================================================
 // NAVIGATION
 // ============================================================
-function navigate(page) {
+function navigate(page, updateHash = true) {
   if (!canAccess(page)) {
     showToast('Halaman ini memerlukan login terlebih dahulu.', 'warning');
     openModal('login-modal');
@@ -140,6 +140,9 @@ function navigate(page) {
   else { console.warn('[HIMAIF] Page not found:', page); return; }
 
   STATE.activePage = page;
+  if (updateHash && window.location.hash !== '#' + page) {
+    window.location.hash = page;
+  }
 
   // Update sidebar active state
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
