@@ -39,10 +39,6 @@ function renderProkerStats(data) {
 }
 
 function filterProker() {
-  // Guard: if cache empty but page is active, reload
-  if (!_prokerCache.length && document.getElementById('page-proker')?.classList.contains('active')) {
-    renderProker(); return;
-  }
   const fs = document.getElementById('proker-filter-status')?.value || 'all';
   const fd = document.getElementById('proker-filter-divisi')?.value || 'all';
   const q  = (document.getElementById('proker-search')?.value || '').toLowerCase().trim();
