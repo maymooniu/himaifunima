@@ -17,10 +17,10 @@ const STATE = {
 const DIVISI_LIST = [
   'Inti',
   'Pendamping Pengurus',
-  'Akademik & Keilmuan',
+  'Akademik',
   'PSDM',
-  'Kominfo',
-  'Mikat',
+  'Media & Komunikasi',
+  'Minat Bakat',
   'Hubungan Masyarakat',
   'Kewirausahaan',
 ];
