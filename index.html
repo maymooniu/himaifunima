@@ -118,6 +118,7 @@
               <select class="form-control" style="width:auto;padding:6px 10px;font-size:12px;" id="pengurus-filter-divisi" onchange="renderPengurusList(_pengurusData)">
                 <option value="all">Semua Divisi</option>
                 <option value="Inti">Inti</option>
+                <option value="Pendamping Pengurus">Pendamping Pengurus</option>
                 <option value="Akademik &amp; Keilmuan">Akademik &amp; Keilmuan</option>
                 <option value="PSDM">PSDM</option>
                 <option value="Kominfo">Kominfo</option>
@@ -259,27 +260,6 @@
           <input type="text" class="form-control" id="ach-search" placeholder="Cari nama / prestasi..." oninput="renderAchList(_achKat,_achLvl)" style="padding-left:30px;">
         </div>
         <div id="ach-list"><div class="loading-wrap"><div class="spinner"></div></div></div>
-      </div>
-    </div>
-
-    <!-- ==================== PAGE: MATERI ==================== -->
-    <div id="page-materi" class="page">
-      <div class="page-body">
-        <div class="section-header">
-          <div>
-            <div class="section-title">Bank <span>Materi</span></div>
-            <div class="section-sub">E-book, modul praktikum, paper, dan referensi ilmiah</div>
-          </div>
-          <button class="btn btn-primary btn-sm admin-only" style="display:none" onclick="openModal('add-materi-modal')">📤 Upload Materi</button>
-        </div>
-        <div class="flex gap-3 flex-wrap mb-4">
-          <div class="filter-bar" id="materi-filters" style="margin-bottom:0;flex:1;flex-wrap:wrap;"></div>
-          <div class="search-input-wrap" style="max-width:240px;">
-            <span class="search-icon">🔍</span>
-            <input type="text" class="form-control" id="materi-search" placeholder="Cari judul / tag..." oninput="filterMateriBySearch()" style="padding-left:30px;">
-          </div>
-        </div>
-        <div id="materi-list"><div class="loading-wrap"><div class="spinner"></div></div></div>
       </div>
     </div>
 
@@ -628,32 +608,6 @@
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal('add-ach-modal')">Batal</button>
       <button class="btn btn-primary" id="ach-modal-save" onclick="saveAchievement()">💾 Simpan</button>
-    </div>
-  </div>
-</div>
-
-<!-- ADD MATERI -->
-<div class="modal-overlay" id="add-materi-modal">
-  <div class="modal" style="max-width:580px;">
-    <div class="modal-header">
-      <div class="modal-title">📚 Upload Materi</div>
-      <button class="modal-close" onclick="closeModal('add-materi-modal')">✕</button>
-    </div>
-    <div class="modal-body">
-      <div class="form-group"><label class="form-label">Judul *</label><input type="text" class="form-control" id="m-judul" placeholder="Judul materi..."></div>
-      <div class="form-row cols-2">
-        <div class="form-group"><label class="form-label">Kategori</label><select class="form-control" id="m-kategori"><option>Modul Praktikum</option><option>E-Book</option><option>Paper/Jurnal</option><option>Tutorial</option><option>Referensi</option></select></div>
-        <div class="form-group"><label class="form-label">Ikon Emoji</label><input type="text" class="form-control" id="m-icon" placeholder="📄" maxlength="4"></div>
-        <div class="form-group"><label class="form-label">Ukuran File</label><input type="text" class="form-control" id="m-ukuran" placeholder="2.4 MB..."></div>
-        <div class="form-group"><label class="form-label">Diupload Oleh</label><input type="text" class="form-control" id="m-uploader" placeholder="Nama / divisi..."></div>
-      </div>
-      <div class="form-group"><label class="form-label">Deskripsi</label><textarea class="form-control" id="m-desc" rows="3" placeholder="Deskripsi singkat..."></textarea></div>
-      <div class="form-group"><label class="form-label">Tags (pisah koma)</label><input type="text" class="form-control" id="m-tags" placeholder="Python, AI, Machine Learning..."></div>
-      <div class="form-group"><label class="form-label">URL File</label><input type="url" class="form-control" id="m-url" placeholder="https://..."></div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeModal('add-materi-modal')">Batal</button>
-      <button class="btn btn-primary" onclick="saveMateri()">💾 Simpan</button>
     </div>
   </div>
 </div>

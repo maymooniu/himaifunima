@@ -177,66 +177,6 @@ async function deleteAch(id, nama) {
 }
 
 // ============================================================
-// BANK MATERI
-// ============================================================
-let _materiData = [];
-let _materiKat  = 'all';
-
-async function renderMateri() {
-  setLoading('materi-list', true);
-  try {
-    _materiData = await DB.getMateri();
-    const kats = ['all', ...new Set(_materiData.map(m => m.kategori).filter(Boolean))];
-    document.getElementById('materi-filters').innerHTML =
-      kats.map(k => `<button class="filter-chip ${k===_materiKat?'active':''}" onclick="_materiKat='${k}';document.getElementById('materi-filters').querySelectorAll('.filter-chip').forEach(b=>b.classList.remove('active'));this.classList.add('active');filterMateriBySearch()">${k === 'all' ? '📚 Semua' : escapeHtml(k)}</button>`).join('');
-    filterMateriBySearch();
-  } catch(e) {
-    document.getElementById('materi-list').innerHTML = `<div class="info-box danger"><span>❌</span><span>${e.message}</span></div>`;
-  }
-}
-
-function filterMateriBySearch() {
-  const q = (document.getElementById('materi-search')?.value || '').toLowerCase().trim();
-  let data = [..._materiData];
-  if (_materiKat !== 'all') data = data.filter(m => m.kategori === _materiKat);
-  if (q) data = data.filter(m =>
-    (m.judul||'').toLowerCase().includes(q) ||
-    (m.tags||'').toLowerCase().includes(q) ||
-    (m.deskripsi||'').toLowerCase().includes(q)
-  );
-  const el = document.getElementById('materi-list');
-  if (!el) return;
-  el.innerHTML = data.length
-    ? `<div class="materi-grid">
-        ${data.map(m => `<div class="materi-card">
-          <div class="materi-icon">${m.icon || '📄'}</div>
-          <div class="materi-title">${escapeHtml(m.judul)}</div>
-          ${m.kategori ? `<span class="badge badge-blue mb-1">${escapeHtml(m.kategori)}</span>` : ''}
-          <div class="materi-desc">${escapeHtml(m.deskripsi || '')}</div>
-          ${m.tags ? `<div class="flex gap-1 flex-wrap">${String(m.tags).split(',').map(t=>`<span class="proj-tag">${escapeHtml(t.trim())}</span>`).join('')}</div>` : ''}
-          <div class="text-xs text-muted mt-1">${m.ukuran ? `💾 ${m.ukuran}` : ''} ${m.uploader ? `· ✍️ ${escapeHtml(m.uploader)}` : ''}</div>
-          <div class="flex gap-2 mt-2">
-            ${m.file_url
-              ? `<a href="${m.file_url}" class="btn btn-primary btn-sm" target="_blank">⬇️ Download</a>`
-              : `<button class="btn btn-ghost btn-sm" onclick="showToast('File belum tersedia','warning')">⬇️ Download</button>`}
-            ${isAdmin() ? `<button class="btn btn-danger btn-icon btn-sm" onclick="deleteMateri('${m.id}')">🗑️</button>` : ''}
-          </div>
-        </div>`).join('')}
-      </div>`
-    : emptyState('📚', 'Tidak ada materi', 'Belum ada materi untuk kategori ini.',
-        isAdmin() ? `<button class="btn btn-primary" onclick="openModal('add-materi-modal')">📤 Upload Materi</button>` : '');
-}
-
-async function deleteMateri(id) {
-  if (!confirm('Hapus materi ini?')) return;
-  try {
-    await DB.deleteMateri(id);
-    showToast('Materi dihapus.', 'success');
-    _materiData = _materiData.filter(m => m.id !== id);
-    filterMateriBySearch();
-  } catch(e) { showToast('Gagal: ' + e.message, 'error'); }
-}
-
 // ============================================================
 // GALERI PROJECT
 // ============================================================
@@ -591,7 +531,7 @@ async function renderDashboard() {
   setLoading('dashboard-content', true, 'Mengumpulkan statistik...');
   try {
     const d = await DB.getDashboardStats(STATE.activePeriode);
-    const { pengurus, proker, pencapaian, projects, blog, rapat, aspirasi, materi, berita } = d;
+    const { pengurus, proker, pencapaian, projects, blog, rapat, aspirasi, berita } = d;
 
     const selesai  = proker.filter(p => p.status === 'selesai').length;
     const berjalan = proker.filter(p => p.status === 'sedang_berjalan').length;
@@ -615,7 +555,6 @@ async function renderDashboard() {
         <div class="stat-card green"> <div class="stat-icon">📝</div><div class="stat-value">${rapat.length}</div><div class="stat-label">Total Rapat</div></div>
         <div class="stat-card amber"> <div class="stat-icon">👥</div><div class="stat-value">${avgHadir}%</div><div class="stat-label">Rata-rata Hadir Rapat</div></div>
         <div class="stat-card red">   <div class="stat-icon">📢</div><div class="stat-value">${aspPend}</div><div class="stat-label">Aspirasi Pending</div></div>
-        <div class="stat-card teal">  <div class="stat-icon">📚</div><div class="stat-value">${materi.length}</div><div class="stat-label">Bank Materi</div></div>
       </div>
 
       <div class="grid-2 mb-6" style="gap:20px;">

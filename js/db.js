@@ -123,11 +123,6 @@ const DB = {
   async updatePencapaian(id, data) { return dbUpdate('pencapaian', id, data); },
   async deletePencapaian(id)  { return dbDelete('pencapaian', id); },
 
-  // Bank Materi
-  async getMateri() { return dbQuery('bank_materi', { order: ['created_at', false] }); },
-  async addMateri(data)       { return dbInsert('bank_materi', data); },
-  async deleteMateri(id)      { return dbDelete('bank_materi', id); },
-
   // Galeri Project
   async getProjects(showAll = false) {
     const opts = { order: ['created_at', false] };
@@ -190,7 +185,7 @@ const DB = {
 
   // Dashboard Stats
   async getDashboardStats(periode) {
-    const [pengurus, proker, pencapaian, projects, blog, rapat, aspirasi, materi, berita] =
+    const [pengurus, proker, pencapaian, projects, blog, rapat, aspirasi, berita] =
       await Promise.all([
         dbQuery('pengurus',      { eq: { periode }, select: 'id' }),
         dbQuery('program_kerja', { eq: { periode }, select: 'id,status,progress' }),
@@ -199,9 +194,8 @@ const DB = {
         dbQuery('tech_blog',     { eq: { status: 'published' }, select: 'id,views' }),
         dbQuery('catatan_rapat', { select: 'id,jumlah_hadir,jumlah_total,total_spontan,jenis' }),
         dbQuery('aspirasi',      { select: 'id,status' }),
-        dbQuery('bank_materi',   { select: 'id' }),
         dbQuery('berita',        { select: 'id' }),
       ]);
-    return { pengurus, proker, pencapaian, projects, blog, rapat, aspirasi, materi, berita };
+    return { pengurus, proker, pencapaian, projects, blog, rapat, aspirasi, berita };
   },
 };

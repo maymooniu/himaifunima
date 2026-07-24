@@ -35,7 +35,6 @@ function renderAdmin() {
       <button class="tab-btn" onclick="adminTab('blog',this)">✍️ Blog</button>
       <button class="tab-btn" onclick="adminTab('project',this)">💡 Projects</button>
       <button class="tab-btn" onclick="adminTab('pencapaian',this)">🏆 Prestasi</button>
-      <button class="tab-btn" onclick="adminTab('materi',this)">📚 Materi</button>
       <button class="tab-btn" onclick="adminTab('users',this)">👤 Users</button>
       <button class="tab-btn" onclick="adminTab('settings',this)">⚙️ Pengaturan</button>
       <button class="tab-btn" onclick="adminTab('export',this)">📥 Export</button>
@@ -63,7 +62,6 @@ async function adminTab(tab, btn) {
       case 'blog':      await adminTabBlog(ct);      break;
       case 'project':   await adminTabProject(ct);   break;
       case 'pencapaian':await adminTabPencapaian(ct);break;
-      case 'materi':    await adminTabMateri(ct);    break;
       case 'users':     await adminTabUsers(ct);     break;
       case 'settings':  adminTabSettings(ct);        break;
       case 'export':    adminTabExport(ct);          break;
@@ -280,31 +278,6 @@ async function adminTabPencapaian(ct) {
                 <button class="btn btn-danger btn-sm" onclick="deleteAch('${p.id}','${escapeHtml(p.prestasi)}');adminTab('pencapaian',null)">🗑️</button>
               </div>
             </td>
-          </tr>`).join('')}
-        </tbody>
-      </table>
-    </div>`;
-}
-
-// ---- MATERI TAB ----
-async function adminTabMateri(ct) {
-  const data = await DB.getMateri();
-  ct.innerHTML = `
-    <div class="section-header mb-4">
-      <div><div class="card-title" style="font-size:16px;">${data.length} Materi</div></div>
-      <button class="btn btn-primary btn-sm" onclick="openModal('add-materi-modal')">📤 Upload Materi</button>
-    </div>
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>Ikon</th><th>Judul</th><th>Kategori</th><th>Uploader</th><th>File</th><th>Aksi</th></tr></thead>
-        <tbody>
-          ${data.map(m => `<tr>
-            <td style="font-size:22px;">${m.icon || '📄'}</td>
-            <td class="font-bold">${escapeHtml(m.judul)}</td>
-            <td><span class="badge badge-blue">${escapeHtml(m.kategori)}</span></td>
-            <td>${escapeHtml(m.uploader || '—')}</td>
-            <td>${m.file_url ? `<a href="${m.file_url}" class="btn btn-ghost btn-sm" target="_blank">⬇️</a>` : '<span class="text-muted text-xs">—</span>'}</td>
-            <td><button class="btn btn-danger btn-sm" onclick="deleteMateri('${m.id}');adminTab('materi',null)">🗑️</button></td>
           </tr>`).join('')}
         </tbody>
       </table>
@@ -766,26 +739,6 @@ async function updateAchievement() { await saveAchievement(); }
 // ============================================================
 // SAVE OTHERS
 // ============================================================
-async function saveMateri() {
-  const judul = document.getElementById('m-judul')?.value.trim() || '';
-  if (!judul) { showToast('Judul wajib diisi!', 'error'); return; }
-  try {
-    await DB.addMateri({
-      judul,
-      kategori: document.getElementById('m-kategori')?.value || 'Referensi',
-      icon:     document.getElementById('m-icon')?.value || '📄',
-      ukuran:   document.getElementById('m-ukuran')?.value || '',
-      uploader: document.getElementById('m-uploader')?.value || '',
-      deskripsi:document.getElementById('m-desc')?.value || '',
-      tags:     document.getElementById('m-tags')?.value || '',
-      file_url: document.getElementById('m-url')?.value || '',
-    });
-    closeModal('add-materi-modal');
-    showToast('Materi ditambahkan!', 'success');
-    await renderMateri();
-  } catch(e) { showToast('Gagal: ' + e.message, 'error'); }
-}
-
 async function saveProject() {
   const nama = document.getElementById('p-nama')?.value.trim() || '';
   const pembuat = document.getElementById('p-pembuat')?.value.trim() || '';

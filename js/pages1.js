@@ -214,10 +214,12 @@ async function renderAbout() {
     <div class="grid-auto mb-6">
       ${[
         {icon:'⚙️',  name:'Inti Himpunan',       desc:'Ketua, Wakil, Sekretaris, Bendahara — pimpinan organisasi.', color:'var(--blue-primary)'},
+        {icon:'🛡️',  name:'Pendamping Pengurus', desc:'Pembina, penasihat, dan pendamping jalannya roda organisasi.', color:'var(--cyan, #06b6d4)'},
         {icon:'🎓',  name:'Akademik & Keilmuan', desc:'Peningkatan kompetensi dan kegiatan akademik mahasiswa TI.', color:'var(--blue-xlight)'},
         {icon:'🤝',  name:'PSDM',                desc:'Pengembangan SDM, rekrutmen, dan pembinaan anggota.', color:'var(--success)'},
         {icon:'📡',  name:'Kominfo',             desc:'Komunikasi, media sosial, dan branding HIMAIF.', color:'var(--teal-light)'},
         {icon:'🎭',  name:'Mikat',               desc:'Minat, bakat, dan hubungan sosial kemahasiswaan.', color:'var(--purple)'},
+        {icon:'🌐',  name:'Humas (Hubungan Masyarakat)', desc:'Hubungan eksternal, kemitraan, dan pengabdian masyarakat.', color:'var(--orange)'},
         {icon:'💼',  name:'Kewirausahaan',       desc:'Wirausaha, sponsorship, dan pemasukan organisasi.', color:'var(--warning)'},
       ].map(d => `<div class="card" style="border-top:3px solid ${d.color};">
         <div class="card-body">
@@ -300,9 +302,18 @@ async function renderPengurus() {
   }
 }
 
-function renderOrgChart(data) {
+function renderOrgChart(rawEvents) {
+  const data = rawEvents.map(d => (d.jabatan === 'Pendamping Pengurus' && d.divisi === 'Inti') ? { ...d, divisi: 'Pendamping Pengurus' } : d);
   const inti    = data.filter(d => d.divisi === 'Inti').sort((a,b) => a.urutan - b.urutan);
-  const divisis = [...new Set(data.filter(d => d.divisi !== 'Inti').map(d => d.divisi))];
+  const divisis = [...new Set(data.filter(d => d.divisi !== 'Inti').map(d => d.divisi))]
+    .sort((a, b) => {
+      const idxA = DIVISI_LIST.indexOf(a);
+      const idxB = DIVISI_LIST.indexOf(b);
+      if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+      if (idxA !== -1) return -1;
+      if (idxB !== -1) return 1;
+      return a.localeCompare(b);
+    });
 
   if (!data.length) {
     document.getElementById('org-chart-wrap').innerHTML = emptyState('👥', 'Belum ada data pengurus', 'Tambahkan pengurus melalui Panel Admin.', isAdmin() ? `<button class="btn btn-primary" onclick="openAddPengurusModal()">+ Tambah Pengurus</button>` : '');
@@ -322,14 +333,15 @@ function renderOrgChart(data) {
 }
 
 function orgCardHtml(m, isInti) {
+  const showDiv = m.divisi !== 'Inti' && m.divisi !== 'Pendamping Pengurus' && m.divisi !== m.jabatan;
   return `<div class="org-card ${isInti ? 'inti' : ''}" onclick="openMemberModal('${m.id}')">
     <div class="org-avatar">${initials(m.nama)}</div>
     <div class="org-name">${escapeHtml(m.nama.split(' ')[0])}</div>
     <div class="org-role">${escapeHtml(m.jabatan)}</div>
-    ${m.divisi !== 'Inti' ? `<div class="org-div">${escapeHtml(m.divisi)}</div>` : ''}
+    ${showDiv ? `<div class="org-div">${escapeHtml(m.divisi)}</div>` : ''}
     <div class="org-tooltip">
       <h4>${escapeHtml(m.nama)}</h4>
-      <p>📋 ${escapeHtml(m.jabatan)}${m.divisi !== 'Inti' ? ' — ' + escapeHtml(m.divisi) : ''}</p>
+      <p>📋 ${escapeHtml(m.jabatan)}${showDiv ? ' — ' + escapeHtml(m.divisi) : ''}</p>
       <p>🎓 NIM: <span style="font-family:var(--font-mono)">${m.nim}</span></p>
       <p>📚 Semester ${m.semester}</p>
       ${m.bio ? `<p style="margin-top:6px;font-style:italic;color:var(--text-dim);font-size:11px;">"${escapeHtml(m.bio)}"</p>` : ''}

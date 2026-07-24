@@ -16,6 +16,7 @@ const STATE = {
 
 const DIVISI_LIST = [
   'Inti',
+  'Pendamping Pengurus',
   'Akademik & Keilmuan',
   'PSDM',
   'Kominfo',
@@ -30,7 +31,6 @@ const PAGE_ACCESS = {
   about:       ['public','pengurus','admin'],
   pengurus:    ['public','pengurus','admin'],
   achievement: ['public','pengurus','admin'],
-  materi:      ['public','pengurus','admin'],
   projects:    ['public','pengurus','admin'],
   blog:        ['public','pengurus','admin'],
   aspirasi:    ['public','pengurus','admin'],
@@ -150,7 +150,7 @@ function navigate(page) {
     home: '🏠 Beranda', about: 'ℹ️ Tentang',
     pengurus: '👥 Data Pengurus', arsip: '📁 Arsip & LPJ',
     proker: '📋 Program Kerja', achievement: '🏆 Pencapaian',
-    materi: '📚 Bank Materi', projects: '💡 Galeri Project',
+    projects: '💡 Galeri Project',
     blog: '✍️ Tech Blog', rapat: '📝 Catatan Rapat',
     aspirasi: '📢 Kotak Aspirasi', dashboard: '📊 Dashboard',
     admin: '⚙️ Panel Admin',
@@ -172,7 +172,6 @@ function _renderPage(page) {
     case 'arsip':       renderArsip();       break;
     case 'proker':      renderProker();      break;
     case 'achievement': renderAchievement(); break;
-    case 'materi':      renderMateri();      break;
     case 'projects':    renderProjects();    break;
     case 'blog':        renderBlog();        break;
     case 'rapat':       renderRapat();       break;
@@ -202,7 +201,6 @@ function updateSidebar() {
     <button class="nav-item" data-page="about"       onclick="navigate('about')">       <span class="nav-icon">ℹ️</span> Tentang HIMAIF</button>
     <button class="nav-item" data-page="pengurus"    onclick="navigate('pengurus')">    <span class="nav-icon">👥</span> Data Pengurus</button>
     <button class="nav-item" data-page="achievement" onclick="navigate('achievement')"> <span class="nav-icon">🏆</span> Pencapaian</button>
-    <button class="nav-item" data-page="materi"      onclick="navigate('materi')">      <span class="nav-icon">📚</span> Bank Materi</button>
     <button class="nav-item" data-page="projects"    onclick="navigate('projects')">    <span class="nav-icon">💡</span> Galeri Project</button>
     <button class="nav-item" data-page="blog"        onclick="navigate('blog')">        <span class="nav-icon">✍️</span> Tech Blog</button>
     <button class="nav-item" data-page="aspirasi"    onclick="navigate('aspirasi')">    <span class="nav-icon">📢</span> Kotak Aspirasi</button>
