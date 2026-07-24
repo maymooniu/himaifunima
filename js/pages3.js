@@ -85,7 +85,7 @@ async function adminTabPengurus(ct) {
         <thead><tr><th>Nama</th><th>NIM</th><th>Divisi</th><th>Jabatan</th><th>Periode</th><th>Semester</th><th>Aksi</th></tr></thead>
         <tbody>
           ${data.map(m => `<tr>
-            <td><div class="flex items-center gap-2"><div class="avatar avatar-sm">${initials(m.nama)}</div><span class="font-bold">${escapeHtml(m.nama)}</span></div></td>
+            <td><div class="flex items-center gap-2">${renderAvatarHtml(m, 'avatar avatar-sm')}<span class="font-bold">${escapeHtml(m.nama)}</span></div></td>
             <td class="font-mono text-sm">${m.nim}</td>
             <td><span class="badge badge-blue">${escapeHtml(m.divisi)}</span></td>
             <td>${escapeHtml(m.jabatan)}</td>
@@ -490,7 +490,14 @@ function pengurusFormHtml(m = {}) {
     </div>
     <div class="form-group"><label class="form-label">Bio Singkat</label><textarea class="form-control" id="pm-bio" rows="2" placeholder="Deskripsi singkat...">${escapeHtml(m.bio||'')}</textarea></div>
     <div class="form-group"><label class="form-label">URL LinkedIn</label><input type="url" class="form-control" id="pm-linkedin" value="${escapeHtml(m.linkedin_url||'')}" placeholder="https://linkedin.com/in/..."></div>
-    <div class="form-group"><label class="form-label">URL Foto</label><input type="url" class="form-control" id="pm-foto" value="${escapeHtml(m.foto_url||'')}" placeholder="https://..."></div>`;
+    <div class="form-group">
+      <label class="form-label">Foto Profil (Upload File atau Masukkan URL)</label>
+      <input type="file" accept="image/*" class="form-control mb-2" onchange="handleImageFileUpload(this, 'pm-foto', 'pm-foto-preview')">
+      <input type="text" class="form-control" id="pm-foto" value="${escapeHtml(m.foto_url||'')}" placeholder="https://... atau data:image/...">
+      <div id="pm-foto-preview">
+        ${m.foto_url ? `<div class="flex items-center gap-3 p-2 bg-3 border border-radius mt-2"><img src="${escapeHtml(m.foto_url)}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;"><div class="text-xs text-muted">Foto saat ini</div></div>` : ''}
+      </div>
+    </div>`;
 }
 
 function getPengurusFormData() {

@@ -334,8 +334,10 @@ function renderOrgChart(rawEvents) {
 
 function orgCardHtml(m, isInti) {
   const showDiv = m.divisi !== 'Inti' && m.divisi !== 'Pendamping Pengurus' && m.divisi !== m.jabatan;
-  return `<div class="org-card ${isInti ? 'inti' : ''}" onclick="openMemberModal('${m.id}')">
-    <div class="org-avatar">${initials(m.nama)}</div>
+  const adminEditBtn = isAdmin() ? `<button class="btn btn-ghost btn-icon btn-sm admin-only" onclick="event.stopPropagation();openEditPengurusModal('${m.id}')" title="Edit Pengurus" style="position:absolute;top:6px;right:6px;padding:2px 6px;font-size:12px;z-index:2;">✏️</button>` : '';
+  return `<div class="org-card ${isInti ? 'inti' : ''}" style="position:relative;" onclick="openMemberModal('${m.id}')">
+    ${adminEditBtn}
+    ${renderAvatarHtml(m, 'org-avatar')}
     <div class="org-name">${escapeHtml(m.nama.split(' ')[0])}</div>
     <div class="org-role">${escapeHtml(m.jabatan)}</div>
     ${showDiv ? `<div class="org-div">${escapeHtml(m.divisi)}</div>` : ''}
@@ -367,7 +369,7 @@ function renderPengurusList(data) {
             ${filtered.map(m => `<tr onclick="openMemberModal('${m.id}')" style="cursor:pointer;">
               <td>
                 <div class="flex items-center gap-2">
-                  <div class="avatar avatar-sm">${initials(m.nama)}</div>
+                  ${renderAvatarHtml(m, 'avatar avatar-sm')}
                   <span class="font-bold">${escapeHtml(m.nama)}</span>
                 </div>
               </td>
@@ -393,9 +395,15 @@ function renderPengurusList(data) {
 function openMemberModal(id) {
   const m = _pengurusData.find(x => x.id === id);
   if (!m) return;
+  const adminActions = isAdmin() ? `
+    <div class="flex gap-2 justify-center mt-4 pt-3" style="border-top:1px solid var(--border);">
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('member-modal');openEditPengurusModal('${m.id}')">✏️ Edit Pengurus</button>
+      <button class="btn btn-danger btn-sm" onclick="closeModal('member-modal');deletePengurus('${m.id}','${escapeHtml(m.nama)}')">🗑️ Hapus</button>
+    </div>` : '';
+
   document.getElementById('member-modal-body').innerHTML = `
     <div class="text-center mb-5">
-      <div class="avatar avatar-xl" style="margin:0 auto 14px;">${initials(m.nama)}</div>
+      ${renderAvatarHtml(m, 'avatar avatar-xl', 'margin:0 auto 14px;')}
       <div class="font-display" style="font-size:22px;font-weight:800;">${escapeHtml(m.nama)}</div>
       <div class="flex gap-2 justify-center mt-2 flex-wrap">
         <span class="badge badge-orange">${escapeHtml(m.jabatan)}</span>
@@ -409,7 +417,8 @@ function openMemberModal(id) {
       <div class="card p-4"><div class="text-xs text-muted mb-1">Periode</div><div class="font-bold">${m.periode}</div></div>
     </div>
     ${m.bio ? `<div class="card p-4 mb-3" style="font-style:italic;color:var(--text-sec);">"${escapeHtml(m.bio)}"</div>` : ''}
-    ${m.linkedin_url ? `<a href="${m.linkedin_url}" class="btn btn-secondary btn-sm" target="_blank" rel="noopener">🔗 Lihat LinkedIn</a>` : ''}`;
+    ${m.linkedin_url ? `<a href="${m.linkedin_url}" class="btn btn-secondary btn-sm" target="_blank" rel="noopener">🔗 Lihat LinkedIn</a>` : ''}
+    ${adminActions}`;
   openModal('member-modal');
 }
 

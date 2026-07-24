@@ -36,7 +36,7 @@ const PAGE_ACCESS = {
   blog:        ['public','pengurus','admin'],
   aspirasi:    ['public','pengurus','admin'],
   // organisasi - pengurus+ only
-  arsip:       ['pengurus','admin'],
+  arsip:       ['public','pengurus','admin'],
   proker:      ['pengurus','admin'],
   rapat:       ['pengurus','admin'],
   dashboard:   ['pengurus','admin'],
@@ -206,6 +206,7 @@ function updateSidebar() {
     <button class="nav-item" data-page="home"        onclick="navigate('home')">        <span class="nav-icon">🏠</span> Beranda</button>
     <button class="nav-item" data-page="about"       onclick="navigate('about')">       <span class="nav-icon">ℹ️</span> Tentang HIMAIF</button>
     <button class="nav-item" data-page="pengurus"    onclick="navigate('pengurus')">    <span class="nav-icon">👥</span> Data Pengurus</button>
+    <button class="nav-item" data-page="arsip"       onclick="navigate('arsip')">       <span class="nav-icon">📁</span> Arsip &amp; LPJ</button>
     <button class="nav-item" data-page="achievement" onclick="navigate('achievement')"> <span class="nav-icon">🏆</span> Pencapaian</button>
     <button class="nav-item" data-page="projects"    onclick="navigate('projects')">    <span class="nav-icon">💡</span> Galeri Project</button>
     <button class="nav-item" data-page="galeri"      onclick="navigate('galeri')">      <span class="nav-icon">📷</span> Galeri HIMAIF</button>
@@ -217,7 +218,6 @@ function updateSidebar() {
   if (isP) {
     html += `<div class="sidebar-section">
       <div class="sidebar-label">Organisasi</div>
-      <button class="nav-item" data-page="arsip"    onclick="navigate('arsip')">    <span class="nav-icon">📁</span> Arsip &amp; LPJ</button>
       <button class="nav-item" data-page="proker"   onclick="navigate('proker')">   <span class="nav-icon">📋</span> Program Kerja</button>
       <button class="nav-item" data-page="rapat"    onclick="navigate('rapat')">    <span class="nav-icon">📝</span> Catatan Rapat</button>
       <button class="nav-item" data-page="dashboard"onclick="navigate('dashboard')"><span class="nav-icon">📊</span> Dashboard</button>
@@ -387,11 +387,144 @@ function initials(name) {
   return (parts[0][0] + parts[parts.length-1][0]).toUpperCase();
 }
 
+function renderAvatarHtml(m, avatarClass = 'avatar avatar-sm', style = '') {
+  if (!m) return `<div class="${avatarClass}" ${style ? `style="${style}"` : ''}>?</div>`;
+  if (m.foto_url && m.foto_url.trim()) {
+    const url = escapeHtml(m.foto_url.trim());
+    const init = escapeHtml(initials(m.nama));
+    return `<div class="${avatarClass}" ${style ? `style="${style}"` : ''}><img src="${url}" alt="${escapeHtml(m.nama || '')}" onerror="this.onerror=null;this.parentElement.innerHTML='${init}'"></div>`;
+  }
+  return `<div class="${avatarClass}" ${style ? `style="${style}"` : ''}>${escapeHtml(initials(m.nama))}</div>`;
+}
+
 function formatDate(d) {
   if (!d) return '—';
   try {
     return new Date(d).toLocaleDateString('id-ID', { day:'numeric', month:'long', year:'numeric' });
   } catch { return d; }
+}
+
+// ============================================================
+// IMAGE UPLOAD & INTERACTIVE MANUAL CROP HELPER
+// ============================================================
+let _currentCropper = null;
+let _cropTargetUrlInputId = null;
+let _cropPreviewContainerId = null;
+
+function handleImageFileUpload(inputEl, targetUrlInputId, previewContainerId, defaultRatio = 1) {
+  const file = inputEl.files && inputEl.files[0];
+  if (!file) return;
+
+  if (!file.type.startsWith('image/')) {
+    showToast('File yang dipilih harus berupa gambar (JPG, PNG, WebP).', 'error');
+    return;
+  }
+
+  _cropTargetUrlInputId = targetUrlInputId;
+  _cropPreviewContainerId = previewContainerId;
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const cropImg = document.getElementById('crop-modal-img');
+    if (!cropImg) return;
+
+    if (_currentCropper) {
+      _currentCropper.destroy();
+      _currentCropper = null;
+    }
+
+    cropImg.src = e.target.result;
+    openModal('image-crop-modal');
+
+    // Initialize Cropper after modal is displayed
+    setTimeout(() => {
+      if (typeof Cropper !== 'undefined') {
+        _currentCropper = new Cropper(cropImg, {
+          aspectRatio: defaultRatio,
+          viewMode: 1,
+          dragMode: 'move',
+          autoCropArea: 0.9,
+          restore: false,
+          guides: true,
+          center: true,
+          highlight: false,
+          cropBoxMovable: true,
+          cropBoxResizable: true,
+          toggleDragModeOnDblclick: false,
+          ready: function() {
+            if (defaultRatio === 1) {
+              document.querySelector('#image-crop-modal .cropper-view-box')?.classList.add('circle-crop');
+              document.querySelector('#image-crop-modal .cropper-face')?.classList.add('circle-crop');
+            }
+          }
+        });
+      } else {
+        console.warn('[HIMAIF] Cropper.js library unavailable');
+      }
+    }, 180);
+  };
+  reader.readAsDataURL(file);
+  inputEl.value = '';
+}
+
+function setCropRatio(ratio) {
+  if (_currentCropper) {
+    _currentCropper.setAspectRatio(ratio);
+    const box = document.querySelector('#image-crop-modal .cropper-view-box');
+    const face = document.querySelector('#image-crop-modal .cropper-face');
+    if (ratio === 1) {
+      box?.classList.add('circle-crop');
+      face?.classList.add('circle-crop');
+    } else {
+      box?.classList.remove('circle-crop');
+      face?.classList.remove('circle-crop');
+    }
+  }
+}
+
+function rotateCrop(deg) {
+  if (_currentCropper) {
+    _currentCropper.rotate(deg);
+  }
+}
+
+function applyCroppedImage() {
+  if (!_currentCropper) {
+    closeModal('image-crop-modal');
+    return;
+  }
+
+  const canvas = _currentCropper.getCroppedCanvas({
+    width: 600,
+    height: 600,
+    imageSmoothingEnabled: true,
+    imageSmoothingQuality: 'high',
+  });
+
+  if (!canvas) {
+    showToast('Gagal memotong gambar.', 'error');
+    return;
+  }
+
+  const croppedDataUrl = canvas.toDataURL('image/jpeg', 0.85);
+  const targetUrlInput = document.getElementById(_cropTargetUrlInputId);
+  const previewContainer = document.getElementById(_cropPreviewContainerId);
+
+  if (targetUrlInput) {
+    targetUrlInput.value = croppedDataUrl;
+  }
+
+  if (previewContainer) {
+    const kbSize = Math.round(croppedDataUrl.length / 1024);
+    previewContainer.innerHTML = `
+      <div class="flex items-center gap-3 p-2 bg-3 border border-orange border-radius mt-2">
+        <img src="${croppedDataUrl}" style="width:44px;height:44px;border-radius:50%;object-fit:cover;">
+        <div class="text-xs text-success font-bold">✓ Foto berhasil dipotong (${kbSize} KB)</div>
+      </div>`;
+  }
+
+  closeModal('image-crop-modal');
+  showToast('Foto berhasil dipotong dan siap disimpan!', 'success');
 }
 
 function formatDateShort(d) {
