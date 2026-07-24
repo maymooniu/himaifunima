@@ -226,7 +226,9 @@ CREATE INDEX IF NOT EXISTS idx_rapat_tanggal ON catatan_rapat(tanggal DESC);
 CREATE TABLE IF NOT EXISTS aspirasi (
   id            UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   kategori      TEXT NOT NULL DEFAULT 'Umum',
+  urgensi       TEXT DEFAULT 'sedang',
   pesan         TEXT NOT NULL,
+  media_url     TEXT,
   status        TEXT NOT NULL DEFAULT 'ditinjau'
                   CHECK (status IN ('ditinjau','diproses','diterima','ditolak')),
   catatan_admin TEXT,

@@ -47,6 +47,16 @@ const PAGE_ACCESS = {
 // ============================================================
 // INIT SETTINGS
 // ============================================================
+function convertGoogleDriveUrl(url) {
+  if (!url || typeof url !== 'string') return url;
+  const trimmed = url.trim();
+  const driveMatch = trimmed.match(/\/file\/d\/([a-zA-Z0-9_-]+)/) || trimmed.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+  if (driveMatch && driveMatch[1]) {
+    return `https://lh3.googleusercontent.com/d/${driveMatch[1]}`;
+  }
+  return trimmed;
+}
+
 async function initSettings() {
   try {
     STATE.settings = await DB.getSettings();
@@ -56,8 +66,9 @@ async function initSettings() {
       if (periodeSelect) periodeSelect.value = STATE.activePeriode;
     }
     // Apply logo
-    const logo = STATE.settings.logo_url;
-    if (logo) {
+    const rawLogo = STATE.settings.logo_url;
+    if (rawLogo) {
+      const logo = convertGoogleDriveUrl(rawLogo);
       const logoEl = document.getElementById('sidebar-logo');
       if (logoEl) {
         logoEl.className = 'sidebar-logo';
@@ -390,7 +401,7 @@ function initials(name) {
 function renderAvatarHtml(m, avatarClass = 'avatar avatar-sm', style = '') {
   if (!m) return `<div class="${avatarClass}" ${style ? `style="${style}"` : ''}>?</div>`;
   if (m.foto_url && m.foto_url.trim()) {
-    const url = escapeHtml(m.foto_url.trim());
+    const url = escapeHtml(convertGoogleDriveUrl(m.foto_url.trim()));
     const init = escapeHtml(initials(m.nama));
     return `<div class="${avatarClass}" ${style ? `style="${style}"` : ''}><img src="${url}" alt="${escapeHtml(m.nama || '')}" onerror="this.onerror=null;this.parentElement.innerHTML='${init}'"></div>`;
   }
@@ -411,7 +422,7 @@ let _currentCropper = null;
 let _cropTargetUrlInputId = null;
 let _cropPreviewContainerId = null;
 
-function handleImageFileUpload(inputEl, targetUrlInputId, previewContainerId, defaultRatio = 1) {
+function handleImageFileUpload(inputEl, targetUrlInputId, previewContainerId, defaultRatio = 1, isCircle = false) {
   const file = inputEl.files && inputEl.files[0];
   if (!file) return;
 
@@ -452,9 +463,14 @@ function handleImageFileUpload(inputEl, targetUrlInputId, previewContainerId, de
           cropBoxResizable: true,
           toggleDragModeOnDblclick: false,
           ready: function() {
-            if (defaultRatio === 1) {
-              document.querySelector('#image-crop-modal .cropper-view-box')?.classList.add('circle-crop');
-              document.querySelector('#image-crop-modal .cropper-face')?.classList.add('circle-crop');
+            const box = document.querySelector('#image-crop-modal .cropper-view-box');
+            const face = document.querySelector('#image-crop-modal .cropper-face');
+            if (isCircle) {
+              box?.classList.add('circle-crop');
+              face?.classList.add('circle-crop');
+            } else {
+              box?.classList.remove('circle-crop');
+              face?.classList.remove('circle-crop');
             }
           }
         });
@@ -525,6 +541,156 @@ function applyCroppedImage() {
 
   closeModal('image-crop-modal');
   showToast('Foto berhasil dipotong dan siap disimpan!', 'success');
+}
+
+function openPhotoLightboxDirect(url, title = '📷 Lampiran Foto') {
+  if (!url) return;
+  const tEl = document.getElementById('lightbox-title');
+  if (tEl) tEl.textContent = title;
+  const imgEl = document.getElementById('lightbox-img');
+  if (imgEl) imgEl.src = url;
+  const metaEl = document.getElementById('lightbox-meta');
+  if (metaEl) metaEl.textContent = '';
+  openModal('photo-lightbox-modal');
+}
+
+function toggleAspirasiAttachMode(mode) {
+  const fileWrap = document.getElementById('asp-attach-file-wrap');
+  const linkWrap = document.getElementById('asp-attach-link-wrap');
+  if (mode === 'file') {
+    if (fileWrap) fileWrap.style.display = '';
+    if (linkWrap) linkWrap.style.display = 'none';
+  } else {
+    if (fileWrap) fileWrap.style.display = 'none';
+    if (linkWrap) linkWrap.style.display = '';
+  }
+}
+
+function toggleFormAttachMode(fileWrapId, linkWrapId, mode) {
+  const fileWrap = document.getElementById(fileWrapId);
+  const linkWrap = document.getElementById(linkWrapId);
+  if (mode === 'file') {
+    if (fileWrap) fileWrap.style.display = '';
+    if (linkWrap) linkWrap.style.display = 'none';
+  } else {
+    if (fileWrap) fileWrap.style.display = 'none';
+    if (linkWrap) linkWrap.style.display = '';
+  }
+}
+
+let _aspMediaList = [];
+
+function removeAspirasiMedia(index) {
+  _aspMediaList.splice(index, 1);
+  syncAspirasiMediaPreview();
+}
+
+function clearAspirasiMedia() {
+  _aspMediaList = [];
+  syncAspirasiMediaPreview();
+}
+
+function syncAspirasiMediaPreview() {
+  const urlInput = document.getElementById('asp-media-url');
+  const preview = document.getElementById('asp-media-preview');
+
+  if (urlInput) {
+    urlInput.value = _aspMediaList.length ? JSON.stringify(_aspMediaList) : '';
+  }
+
+  if (preview) {
+    if (!_aspMediaList.length) {
+      preview.innerHTML = '';
+      return;
+    }
+
+    let html = `<div class="grid grid-2 gap-2 mt-2">`;
+    _aspMediaList.forEach((item, idx) => {
+      const isImg = item.type === 'image';
+      html += `
+        <div class="p-2 bg-3 border border-orange border-radius relative flex flex-col justify-between" style="overflow:hidden;">
+          ${isImg
+            ? `<img src="${item.url}" style="width:100%;height:120px;object-fit:cover;border-radius:6px;cursor:pointer;" onclick="openPhotoLightboxDirect('${item.url}')">`
+            : `<video src="${item.url}" controls preload="metadata" style="width:100%;height:120px;object-fit:cover;border-radius:6px;"></video>`
+          }
+          <div class="flex items-center justify-between mt-1 text-xs">
+            <span class="text-success font-bold">${isImg ? '📷 Foto' : '🎥 Video'} (${item.sizeKb} KB)</span>
+            <button type="button" class="btn btn-danger btn-icon btn-sm" style="padding:2px 6px;" onclick="removeAspirasiMedia(${idx})">🗑️</button>
+          </div>
+        </div>`;
+    });
+    html += `</div>`;
+    preview.innerHTML = html;
+  }
+}
+
+async function handleAspirasiMediaUpload(inputEl) {
+  const files = inputEl.files ? Array.from(inputEl.files) : [];
+  if (!files.length) return;
+
+  const preview = document.getElementById('asp-media-preview');
+  if (preview) preview.innerHTML = `<div class="text-xs text-muted mt-2">⌛ Memproses ${files.length} file...</div>`;
+
+  for (const file of files) {
+    if (file.type.startsWith('image/')) {
+      await new Promise(resolve => {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const img = new Image();
+          img.onload = function() {
+            const canvas = document.createElement('canvas');
+            const maxDim = 800;
+            let width = img.width;
+            let height = img.height;
+
+            if (width > height) {
+              if (width > maxDim) {
+                height = Math.round((height * maxDim) / width);
+                width = maxDim;
+              }
+            } else {
+              if (height > maxDim) {
+                width = Math.round((width * maxDim) / height);
+                height = maxDim;
+              }
+            }
+
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+
+            const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.82);
+            const sizeKb = Math.round(compressedDataUrl.length / 1024);
+            _aspMediaList.push({ type: 'image', url: compressedDataUrl, sizeKb });
+            resolve();
+          };
+          img.onerror = resolve;
+          img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    } else if (file.type.startsWith('video/')) {
+      const maxMb = 10;
+      if (file.size > maxMb * 1024 * 1024) {
+        showToast(`File video "${file.name}" > ${maxMb}MB dilewati.`, 'warning');
+        continue;
+      }
+      await new Promise(resolve => {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const sizeKb = Math.round(file.size / 1024);
+          _aspMediaList.push({ type: 'video', url: e.target.result, sizeKb });
+          resolve();
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+  }
+
+  inputEl.value = '';
+  syncAspirasiMediaPreview();
+  showToast(`${files.length} file berhasil dilampirkan!`, 'success');
 }
 
 function formatDateShort(d) {

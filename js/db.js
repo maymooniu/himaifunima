@@ -239,7 +239,17 @@ const DB = {
 
   // Aspirasi
   async getAspirasi()         { return dbQuery('aspirasi', { order: ['created_at', false] }); },
-  async addAspirasi(data)     { return dbInsert('aspirasi', { ...data, status: 'ditinjau' }); },
+  async addAspirasi(data)     {
+    try {
+      return await dbInsert('aspirasi', { ...data, status: 'ditinjau' });
+    } catch(e) {
+      if (e.message && (e.message.includes('media_url') || e.message.includes('urgensi') || e.message.includes('schema cache'))) {
+        const { media_url, urgensi, ...rest } = data;
+        return await dbInsert('aspirasi', { ...rest, status: 'ditinjau' });
+      }
+      throw e;
+    }
+  },
   async updateAspStatus(id, status, catatan) {
     return dbUpdate('aspirasi', id, { status, catatan_admin: catatan });
   },

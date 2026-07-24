@@ -395,13 +395,15 @@ async function saveSettings(keys) {
 }
 
 function previewLogo() {
-  const url  = document.getElementById('setting-logo_url')?.value.trim();
+  const raw  = document.getElementById('setting-logo_url')?.value.trim();
   const wrap = document.getElementById('logo-preview-wrap');
-  if (!url || !wrap) return;
+  if (!raw || !wrap) return;
+  const url = convertGoogleDriveUrl(raw);
   wrap.innerHTML = `<img src="${url}" style="width:72px;height:72px;border-radius:10px;object-fit:contain;" onerror="this.parentElement.innerHTML='❌ Gagal muat'">`;
 }
 async function saveLogo() {
-  const url = document.getElementById('setting-logo_url')?.value.trim() || '';
+  const raw = document.getElementById('setting-logo_url')?.value.trim() || '';
+  const url = convertGoogleDriveUrl(raw);
   try {
     await DB.saveSetting('logo_url', url);
     STATE.settings.logo_url = url;
@@ -492,7 +494,7 @@ function pengurusFormHtml(m = {}) {
     <div class="form-group"><label class="form-label">URL LinkedIn</label><input type="url" class="form-control" id="pm-linkedin" value="${escapeHtml(m.linkedin_url||'')}" placeholder="https://linkedin.com/in/..."></div>
     <div class="form-group">
       <label class="form-label">Foto Profil (Upload File atau Masukkan URL)</label>
-      <input type="file" accept="image/*" class="form-control mb-2" onchange="handleImageFileUpload(this, 'pm-foto', 'pm-foto-preview')">
+      <input type="file" accept="image/*" class="form-control mb-2" onchange="handleImageFileUpload(this, 'pm-foto', 'pm-foto-preview', 1, true)">
       <input type="text" class="form-control" id="pm-foto" value="${escapeHtml(m.foto_url||'')}" placeholder="https://... atau data:image/...">
       <div id="pm-foto-preview">
         ${m.foto_url ? `<div class="flex items-center gap-3 p-2 bg-3 border border-radius mt-2"><img src="${escapeHtml(m.foto_url)}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;"><div class="text-xs text-muted">Foto saat ini</div></div>` : ''}

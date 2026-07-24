@@ -458,6 +458,41 @@ async function loadAspirasi() {
   }
 }
 
+function renderSingleMediaItemHtml(url) {
+  if (!url || !url.trim()) return '';
+  const u = url.trim();
+  const lowerUrl = u.toLowerCase();
+
+  if (lowerUrl.startsWith('data:image/') || lowerUrl.match(/\.(jpg|jpeg|png|webp|gif|svg)($|\?)/)) {
+    return `<img src="${escapeHtml(u)}" alt="Lampiran Foto" style="max-width:100%;max-height:300px;border-radius:8px;border:1px solid var(--border);cursor:pointer;object-fit:contain;" onclick="openPhotoLightboxDirect('${escapeHtml(u)}', '📷 Lampiran Foto Aspirasi')">`;
+  } else if (lowerUrl.startsWith('data:video/') || lowerUrl.match(/\.(mp4|webm|ogg)($|\?)/)) {
+    return `<video src="${escapeHtml(u)}" controls preload="metadata" style="max-width:100%;max-height:240px;border-radius:8px;border:1px solid var(--border);"></video>`;
+  } else {
+    return `<a href="${escapeHtml(u)}" target="_blank" rel="noopener" class="btn btn-ghost btn-sm">📎 Buka Lampiran / Media Link</a>`;
+  }
+}
+
+function renderAspirasiMediaHtml(mediaUrl) {
+  if (!mediaUrl || !mediaUrl.trim()) return '';
+  const raw = mediaUrl.trim();
+
+  if (raw.startsWith('[')) {
+    try {
+      const list = JSON.parse(raw);
+      if (Array.isArray(list) && list.length) {
+        return `<div class="mt-2 mb-2 flex flex-col gap-2">
+          ${list.map(item => {
+            const u = typeof item === 'object' ? item.url : item;
+            return renderSingleMediaItemHtml(u);
+          }).join('')}
+        </div>`;
+      }
+    } catch(e) {}
+  }
+
+  return `<div class="mt-2 mb-2">${renderSingleMediaItemHtml(raw)}</div>`;
+}
+
 function filterAsp() {
   const statusF = document.getElementById('asp-filter-status')?.value || 'all';
   const katF    = document.getElementById('asp-filter-kat')?.value || 'all';
@@ -469,13 +504,15 @@ function filterAsp() {
   el.innerHTML = data.length
     ? data.map(a => `<div class="asp-card">
         <div class="flex justify-between items-start gap-3">
-          <div class="flex gap-2 flex-wrap">
+          <div class="flex gap-2 flex-wrap items-center">
             <span class="badge badge-blue">${escapeHtml(a.kategori)}</span>
+            ${a.urgensi === 'tinggi' ? '<span class="badge badge-red">🔴 Urgen</span>' : a.urgensi === 'rendah' ? '<span class="badge badge-gray">🟢 Rendah</span>' : ''}
             ${getStatusBadge(a.status)}
           </div>
           <div class="text-xs text-muted flex-shrink-0">${timeAgo(a.created_at)}</div>
         </div>
         <div class="asp-message">${escapeHtml(a.pesan)}</div>
+        ${renderAspirasiMediaHtml(a.media_url)}
         ${a.catatan_admin ? `<div class="info-box mb-2" style="font-size:12px;"><span>💬</span><span><strong>Catatan Admin:</strong> ${escapeHtml(a.catatan_admin)}</span></div>` : ''}
         ${isAdmin() ? `<div class="flex gap-2 flex-wrap mt-2" onclick="event.stopPropagation()">
           <select class="form-control" style="width:auto;padding:4px 8px;font-size:12px;" id="asp-status-${a.id}" onchange="updateAspStatus('${a.id}',this.value)">
@@ -491,12 +528,27 @@ function filterAsp() {
 }
 
 async function submitAspirasi() {
-  const kategori = document.getElementById('asp-kategori')?.value || 'Umum';
-  const pesan    = (document.getElementById('asp-pesan')?.value || '').trim();
+  const kategori  = document.getElementById('asp-kategori')?.value || 'Umum';
+  const urgensi   = document.getElementById('asp-urgensi')?.value || 'sedang';
+  const pesan     = (document.getElementById('asp-pesan')?.value || '').trim();
+
+  const mode = document.querySelector('input[name="asp-attach-mode"]:checked')?.value || 'file';
+  let media_url = '';
+
+  if (mode === 'file') {
+    media_url = (document.getElementById('asp-media-url')?.value || '').trim();
+  } else {
+    media_url = (document.getElementById('asp-link-input')?.value || '').trim();
+  }
+
   if (pesan.length < 10) { showToast('Pesan minimal 10 karakter!', 'error'); return; }
+
   try {
-    await DB.addAspirasi({ kategori, pesan });
+    await DB.addAspirasi({ kategori, urgensi, pesan, media_url });
     document.getElementById('asp-pesan').value = '';
+    const linkIn = document.getElementById('asp-link-input');
+    if (linkIn) linkIn.value = '';
+    if (typeof clearAspirasiMedia === 'function') clearAspirasiMedia();
     showToast('Aspirasi berhasil dikirim! Terima kasih. 🙏', 'success');
   } catch(e) { showToast('Gagal kirim: ' + e.message, 'error'); }
 }

@@ -396,6 +396,31 @@
               <textarea class="form-control" id="asp-pesan" rows="5" placeholder="Tulis kritik, saran, keluhan, atau usulan dengan jelas dan sopan..."></textarea>
               <div class="form-hint">Minimal 10 karakter.</div>
             </div>
+            <div class="form-group">
+              <label class="form-label">Lampiran Foto / Video (Opsional)</label>
+              <div class="flex gap-4 mb-3 text-sm">
+                <label class="flex items-center gap-1 cursor-pointer font-bold">
+                  <input type="radio" name="asp-attach-mode" value="file" checked onchange="toggleAspirasiAttachMode('file')"> 📁 Upload File
+                </label>
+                <label class="flex items-center gap-1 cursor-pointer font-bold">
+                  <input type="radio" name="asp-attach-mode" value="link" onchange="toggleAspirasiAttachMode('link')"> 🔗 Link Web / Drive
+                </label>
+              </div>
+
+              <!-- FILE MODE -->
+              <div id="asp-attach-file-wrap">
+                <input type="file" accept="image/*,video/*" multiple class="form-control mb-2" onchange="handleAspirasiMediaUpload(this)">
+                <div id="asp-media-preview"></div>
+              </div>
+
+              <!-- LINK MODE -->
+              <div id="asp-attach-link-wrap" style="display:none;">
+                <input type="text" class="form-control" id="asp-link-input" placeholder="https://... (URL foto/video, YouTube, atau Google Drive)">
+              </div>
+
+              <input type="hidden" id="asp-media-url">
+              <div class="form-hint mt-2">Identitasmu tetap 100% anonim.</div>
+            </div>
             <button class="btn btn-primary" onclick="submitAspirasi()">📤 Kirim Aspirasi</button>
           </div>
         </div>
