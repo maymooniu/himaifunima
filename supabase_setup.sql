@@ -289,6 +289,20 @@ CREATE TABLE IF NOT EXISTS berita (
 CREATE INDEX IF NOT EXISTS idx_berita_published ON berita(published_at DESC);
 
 
+-- TABLE: galeri_himaif
+CREATE TABLE IF NOT EXISTS galeri_himaif (
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  judul       TEXT NOT NULL,
+  foto_url    TEXT NOT NULL,
+  kategori    TEXT NOT NULL,
+  divisi      TEXT DEFAULT 'Inti',
+  periode     TEXT DEFAULT '2025/2026',
+  deskripsi   TEXT,
+  tanggal     TEXT,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_galeri_created ON galeri_himaif(created_at DESC);
+
 -- ============================================================================
 -- DISABLE RLS & GRANT ACCESS
 -- ============================================================================
@@ -300,6 +314,7 @@ ALTER TABLE program_kerja    DISABLE ROW LEVEL SECURITY;
 ALTER TABLE pencapaian       DISABLE ROW LEVEL SECURITY;
 ALTER TABLE bank_materi      DISABLE ROW LEVEL SECURITY;
 ALTER TABLE galeri_project   DISABLE ROW LEVEL SECURITY;
+ALTER TABLE galeri_himaif    DISABLE ROW LEVEL SECURITY;
 ALTER TABLE tech_blog        DISABLE ROW LEVEL SECURITY;
 ALTER TABLE catatan_rapat    DISABLE ROW LEVEL SECURITY;
 ALTER TABLE aspirasi         DISABLE ROW LEVEL SECURITY;

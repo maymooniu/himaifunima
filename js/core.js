@@ -32,6 +32,7 @@ const PAGE_ACCESS = {
   pengurus:    ['public','pengurus','admin'],
   achievement: ['public','pengurus','admin'],
   projects:    ['public','pengurus','admin'],
+  galeri:      ['public','pengurus','admin'],
   blog:        ['public','pengurus','admin'],
   aspirasi:    ['public','pengurus','admin'],
   // organisasi - pengurus+ only
@@ -154,6 +155,7 @@ function navigate(page, updateHash = true) {
     pengurus: '👥 Data Pengurus', arsip: '📁 Arsip & LPJ',
     proker: '📋 Program Kerja', achievement: '🏆 Pencapaian',
     projects: '💡 Galeri Project',
+    galeri: '📷 Galeri HIMAIF',
     blog: '✍️ Tech Blog', rapat: '📝 Catatan Rapat',
     aspirasi: '📢 Kotak Aspirasi', dashboard: '📊 Dashboard',
     admin: '⚙️ Panel Admin',
@@ -176,6 +178,7 @@ function _renderPage(page) {
     case 'proker':      renderProker();      break;
     case 'achievement': renderAchievement(); break;
     case 'projects':    renderProjects();    break;
+    case 'galeri':      renderGaleri();      break;
     case 'blog':        renderBlog();        break;
     case 'rapat':       renderRapat();       break;
     case 'aspirasi':    renderAspirasi();    break;
@@ -205,6 +208,7 @@ function updateSidebar() {
     <button class="nav-item" data-page="pengurus"    onclick="navigate('pengurus')">    <span class="nav-icon">👥</span> Data Pengurus</button>
     <button class="nav-item" data-page="achievement" onclick="navigate('achievement')"> <span class="nav-icon">🏆</span> Pencapaian</button>
     <button class="nav-item" data-page="projects"    onclick="navigate('projects')">    <span class="nav-icon">💡</span> Galeri Project</button>
+    <button class="nav-item" data-page="galeri"      onclick="navigate('galeri')">      <span class="nav-icon">📷</span> Galeri HIMAIF</button>
     <button class="nav-item" data-page="blog"        onclick="navigate('blog')">        <span class="nav-icon">✍️</span> Tech Blog</button>
     <button class="nav-item" data-page="aspirasi"    onclick="navigate('aspirasi')">    <span class="nav-icon">📢</span> Kotak Aspirasi</button>
   </div>`;

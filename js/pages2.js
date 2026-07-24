@@ -606,3 +606,184 @@ async function renderDashboard() {
     document.getElementById('dashboard-content').innerHTML = `<div class="info-box danger"><span>❌</span><span>Gagal memuat dashboard: ${escapeHtml(e.message)}</span></div>`;
   }
 }
+
+// ============================================================
+// GALERI HIMAIF PAGE
+// ============================================================
+let _galeriData = [];
+let _activeGaleriKat = 'Semua';
+let _activeGaleriDiv = 'all';
+let _activeGaleriPeriode = '2025/2026';
+
+async function renderGaleri() {
+  setLoading('galeri-list', true, 'Memuat galeri HIMAIF...');
+  try {
+    _galeriData = await DB.getGaleri();
+    const selPeriode = document.getElementById('galeri-filter-periode')?.value;
+    if (selPeriode) _activeGaleriPeriode = selPeriode;
+    updateGaleriDivisiOptions();
+    filterGaleri(_activeGaleriKat, _activeGaleriDiv, null);
+  } catch(e) {
+    document.getElementById('galeri-list').innerHTML = `<div class="info-box danger"><span>❌</span><span>${escapeHtml(e.message)}</span></div>`;
+  }
+}
+
+function onGaleriPeriodeChange(periode) {
+  _activeGaleriPeriode = periode;
+  _activeGaleriDiv = 'all';
+  updateGaleriDivisiOptions();
+  filterGaleri(_activeGaleriKat, 'all', null);
+}
+
+function updateGaleriDivisiOptions() {
+  const divSelect = document.getElementById('galeri-filter-divisi');
+  if (!divSelect) return;
+
+  let relevantPhotos = [..._galeriData];
+  if (_activeGaleriPeriode && _activeGaleriPeriode !== 'all') {
+    relevantPhotos = relevantPhotos.filter(g => (g.periode || '2025/2026') === _activeGaleriPeriode);
+  }
+
+  // Get unique divisions from relevant period photos, plus standard list fallback
+  const uniqueDivisions = [...new Set(relevantPhotos.map(g => g.divisi).filter(Boolean))];
+  const allKnownDivisions = [...new Set([...DIVISI_LIST, 'Kerohanian', ...uniqueDivisions])];
+
+  divSelect.innerHTML = `<option value="all">Semua Divisi</option>` +
+    allKnownDivisions.map(d => `<option value="${escapeHtml(d)}" ${d === _activeGaleriDiv ? 'selected' : ''}>${escapeHtml(d)}</option>`).join('');
+}
+
+function filterGaleri(kat, div, btn) {
+  if (btn && kat) {
+    _activeGaleriKat = kat;
+    btn.closest('.filter-bar')?.querySelectorAll('.filter-chip').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  } else if (kat) {
+    _activeGaleriKat = kat;
+  }
+
+  if (div !== null && div !== undefined) {
+    _activeGaleriDiv = div;
+  } else {
+    _activeGaleriDiv = document.getElementById('galeri-filter-divisi')?.value || _activeGaleriDiv || 'all';
+  }
+
+  const selPeriode = document.getElementById('galeri-filter-periode')?.value || _activeGaleriPeriode || 'all';
+  const q = (document.getElementById('galeri-search')?.value || '').toLowerCase().trim();
+  let data = [..._galeriData];
+
+  if (selPeriode && selPeriode !== 'all') {
+    data = data.filter(g => (g.periode || '2025/2026') === selPeriode);
+  }
+
+  if (_activeGaleriKat && _activeGaleriKat !== 'Semua') {
+    data = data.filter(g => g.kategori === _activeGaleriKat);
+  }
+
+  if (_activeGaleriDiv && _activeGaleriDiv !== 'all') {
+    data = data.filter(g => g.divisi === _activeGaleriDiv);
+  }
+
+  if (q) {
+    data = data.filter(g =>
+      (g.judul || '').toLowerCase().includes(q) ||
+      (g.kategori || '').toLowerCase().includes(q) ||
+      (g.divisi || '').toLowerCase().includes(q) ||
+      (g.periode || '').toLowerCase().includes(q) ||
+      (g.deskripsi || '').toLowerCase().includes(q)
+    );
+  }
+
+  const el = document.getElementById('galeri-list');
+  if (!el) return;
+
+  el.innerHTML = data.length
+    ? `<div class="galeri-grid">
+        ${data.map(g => `<div class="galeri-card" onclick="openPhotoLightbox('${g.id}')">
+          <div class="galeri-img-wrap">
+            <img src="${escapeHtml(g.foto_url)}" alt="${escapeHtml(g.judul)}" class="galeri-img" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1523580494863-6f3031224c94?auto=format&fit=crop&w=800&q=80'">
+            <div class="galeri-overlay">
+              <span class="galeri-zoom-icon">🔍 Zoom Foto</span>
+            </div>
+          </div>
+          <div class="galeri-body">
+            <div class="galeri-badges mb-2">
+              <span class="badge badge-orange">${escapeHtml(g.kategori || 'Kegiatan')}</span>
+              ${g.divisi ? `<span class="badge badge-blue">${escapeHtml(g.divisi)}</span>` : ''}
+              <span class="badge badge-gray font-mono">${escapeHtml(g.periode || '2025/2026')}</span>
+            </div>
+            <div class="galeri-title">${escapeHtml(g.judul)}</div>
+            ${g.deskripsi ? `<div class="text-xs text-muted mt-1">${escapeHtml(g.deskripsi)}</div>` : ''}
+            ${g.tanggal ? `<div class="text-xs text-dim mt-2 font-mono">📅 ${escapeHtml(g.tanggal)}</div>` : ''}
+            ${isAdmin() ? `<div class="mt-3 flex justify-end" onclick="event.stopPropagation()">
+              <button class="btn btn-danger btn-icon btn-sm" onclick="deleteGaleri('${g.id}')" title="Hapus Foto">🗑️</button>
+            </div>` : ''}
+          </div>
+        </div>`).join('')}
+      </div>`
+    : emptyState('📷', 'Foto tidak ditemukan', isAdmin() ? 'Belum ada foto yang ditambahkan untuk filter ini.' : 'Belum ada foto pada periode/kategori ini.',
+        isAdmin() ? `<button class="btn btn-primary" onclick="openAddGaleriModal()">+ Tambah Foto</button>` : '');
+}
+
+function openAddGaleriModal() {
+  document.getElementById('galeri-judul').value = '';
+  document.getElementById('galeri-url').value = '';
+  document.getElementById('galeri-deskripsi').value = '';
+  openModal('add-galeri-modal');
+}
+
+async function saveGaleri() {
+  const judul = document.getElementById('galeri-judul')?.value.trim();
+  const foto_url = document.getElementById('galeri-url')?.value.trim();
+  const kategori = document.getElementById('galeri-kategori')?.value;
+  const divisi = document.getElementById('galeri-divisi')?.value;
+  const periode = document.getElementById('galeri-periode')?.value || '2025/2026';
+  const deskripsi = document.getElementById('galeri-deskripsi')?.value.trim();
+
+  if (!judul || !foto_url) {
+    showToast('Judul foto dan URL foto wajib diisi!', 'error');
+    return;
+  }
+
+  try {
+    await DB.addGaleri({
+      judul,
+      foto_url,
+      kategori,
+      divisi,
+      periode,
+      deskripsi,
+      tanggal: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
+    });
+    closeModal('add-galeri-modal');
+    showToast('Foto berhasil ditambahkan!', 'success');
+    await renderGaleri();
+  } catch(e) {
+    showToast('Gagal menyimpan foto: ' + e.message, 'error');
+  }
+}
+
+async function deleteGaleri(id) {
+  if (!confirm('Apakah Anda yakin ingin menghapus foto ini?')) return;
+  try {
+    await DB.deleteGaleri(id);
+    showToast('Foto berhasil dihapus.', 'info');
+    await renderGaleri();
+  } catch(e) {
+    showToast('Gagal menghapus foto: ' + e.message, 'error');
+  }
+}
+
+function openPhotoLightbox(id) {
+  const photo = _galeriData.find(g => g.id === id);
+  if (!photo) return;
+  document.getElementById('lightbox-title').textContent = '📷 ' + photo.judul;
+  const imgEl = document.getElementById('lightbox-img');
+  imgEl.src = photo.foto_url;
+  imgEl.onerror = () => { imgEl.src = 'https://images.unsplash.com/photo-1523580494863-6f3031224c94?auto=format&fit=crop&w=800&q=80'; };
+  document.getElementById('lightbox-meta').innerHTML = `
+    <strong>Periode:</strong> ${escapeHtml(photo.periode || '2025/2026')} | 
+    <strong>Kategori:</strong> ${escapeHtml(photo.kategori)} | 
+    <strong>Divisi:</strong> ${escapeHtml(photo.divisi || 'Inti')} 
+    ${photo.tanggal ? `| <strong>Tanggal:</strong> ${escapeHtml(photo.tanggal)}` : ''}`;
+  openModal('photo-lightbox-modal');
+}

@@ -5,6 +5,79 @@
 const SUPABASE_URL = 'https://wpizplmqhvdhwklumdsw.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_YNsK8JOSnKfwpzAj_nme0g_YEYgFNLc';
 
+const MOCK_GALERI = [
+  {
+    id: 'g1',
+    judul: 'Latihan Kepemimpinan Mahasiswa (LKM) 2025',
+    foto_url: 'https://images.unsplash.com/photo-1523580494863-6f3031224c94?auto=format&fit=crop&w=800&q=80',
+    kategori: 'LKM',
+    divisi: 'PSDM',
+    periode: '2025/2026',
+    deskripsi: 'Kegiatan pembentukan karakter dan kepemimpinan calon pengurus HIMAIF.',
+    tanggal: '15 Februari 2025'
+  },
+  {
+    id: 'g2',
+    judul: 'Malam Kebersamaan HIMAIF',
+    foto_url: 'https://images.unsplash.com/photo-1511632765486-a01980e01a18?auto=format&fit=crop&w=800&q=80',
+    kategori: 'Malam Kebersamaan',
+    divisi: 'Minat Bakat',
+    periode: '2025/2026',
+    deskripsi: 'Ajang akrab dan kebersamaan seluruh anggota dan pengurus HIMAIF.',
+    tanggal: '20 Januari 2025'
+  },
+  {
+    id: 'g3',
+    judul: 'Gathering & Makrab Angkatan',
+    foto_url: 'https://images.unsplash.com/photo-1528605248644-14dd04022da1?auto=format&fit=crop&w=800&q=80',
+    kategori: 'Gathering',
+    divisi: 'Hubungan Masyarakat',
+    periode: '2025/2026',
+    deskripsi: 'Silaturahmi dan keakraban antar angkatan mahasiswa Teknik Informatika.',
+    tanggal: '10 Desember 2024'
+  },
+  {
+    id: 'g4',
+    judul: 'Pelatihan Web Development & Supabase',
+    foto_url: 'https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=800&q=80',
+    kategori: 'Pelatihan',
+    divisi: 'Akademik',
+    periode: '2025/2026',
+    deskripsi: 'Workshop pengenalan komputasi awan dan modern web development.',
+    tanggal: '05 November 2024'
+  },
+  {
+    id: 'g5',
+    judul: 'Musyawarah Kerja (Muker) HIMAIF',
+    foto_url: 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=800&q=80',
+    kategori: 'Muker',
+    divisi: 'Inti',
+    periode: '2025/2026',
+    deskripsi: 'Pembahasan program kerja dan arah strategis HIMAIF untuk satu periode.',
+    tanggal: '12 Oktober 2024'
+  },
+  {
+    id: 'g6',
+    judul: 'Kegiatan Kerohanian & Buka Bersama 2024',
+    foto_url: 'https://images.unsplash.com/photo-1511632765486-a01980e01a18?auto=format&fit=crop&w=800&q=80',
+    kategori: 'Gathering',
+    divisi: 'Kerohanian',
+    periode: '2024/2025',
+    deskripsi: 'Kegiatan keagamaan dan silaturahmi divisi Kerohanian periode 2024/2025.',
+    tanggal: '25 Maret 2024'
+  },
+  {
+    id: 'g7',
+    judul: 'Seminar Akademik & Olimpiade Koding 2024',
+    foto_url: 'https://images.unsplash.com/photo-1542744094-3a31727202b3?auto=format&fit=crop&w=800&q=80',
+    kategori: 'Pelatihan',
+    divisi: 'Akademik & Keilmuan',
+    periode: '2024/2025',
+    deskripsi: 'Seminar sains dan algoritma oleh divisi Akademik & Keilmuan.',
+    tanggal: '14 Mei 2024'
+  }
+];
+
 let _sb = null;
 function getSB() {
   if (!_sb) {
@@ -133,6 +206,19 @@ const DB = {
   async approveProject(id)      { return dbUpdate('galeri_project', id, { status: 'approved' }); },
   async rejectProject(id)       { return dbUpdate('galeri_project', id, { status: 'rejected' }); },
   async deleteProject(id)       { return dbDelete('galeri_project', id); },
+
+  // Galeri HIMAIF
+  async getGaleri() {
+    try {
+      const data = await dbQuery('galeri_himaif', { order: ['created_at', false] });
+      return (data && data.length > 0) ? data : MOCK_GALERI;
+    } catch(e) {
+      console.warn('[DB] Using fallback MOCK_GALERI:', e.message);
+      return MOCK_GALERI;
+    }
+  },
+  async addGaleri(data)   { return dbInsert('galeri_himaif', data); },
+  async deleteGaleri(id)  { return dbDelete('galeri_himaif', id); },
 
   // Tech Blog
   async getBlog(showAll = false) {
