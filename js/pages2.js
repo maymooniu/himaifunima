@@ -159,7 +159,7 @@ function renderAchList(kat, lvl) {
         </div>`).join('')}
       </div>`
     : emptyState('🏆', 'Tidak ada prestasi', 'Belum ada prestasi untuk kategori ini.',
-        isAdmin() ? `<button class="btn btn-primary" onclick="openModal('add-ach-modal')">+ Tambah Prestasi</button>` : '');
+        isAdmin() ? `<button class="btn btn-primary" onclick="openAddAchModal()">+ Tambah Prestasi</button>` : '');
 }
 
 async function deleteAch(id, nama) {
@@ -392,7 +392,7 @@ function filterRapat() {
         </div>`;
       }).join('')
     : emptyState('📝', 'Tidak ada catatan rapat', 'Belum ada rapat yang dicatat.',
-        isAdmin() ? `<button class="btn btn-primary" onclick="openModal('add-rapat-modal')">+ Catat Rapat</button>` : '');
+        isAdmin() ? `<button class="btn btn-primary" onclick="openAddRapatModal()">+ Catat Rapat</button>` : '');
 }
 
 function openRapatDetail(id) {
@@ -773,22 +773,34 @@ function filterGaleri(kat, div, btn) {
 }
 
 function openAddGaleriModal() {
-  document.getElementById('galeri-judul').value = '';
-  document.getElementById('galeri-url').value = '';
-  document.getElementById('galeri-deskripsi').value = '';
+  if (document.getElementById('galeri-judul')) document.getElementById('galeri-judul').value = '';
+  if (document.getElementById('galeri-url')) document.getElementById('galeri-url').value = '';
+  if (document.getElementById('galeri-link-input')) document.getElementById('galeri-link-input').value = '';
+  if (document.getElementById('galeri-deskripsi')) document.getElementById('galeri-deskripsi').value = '';
+  if (document.getElementById('galeri-foto-preview')) document.getElementById('galeri-foto-preview').innerHTML = '';
+  if (typeof toggleFormAttachMode === 'function') toggleFormAttachMode('galeri-file-wrap', 'galeri-link-wrap', 'file');
   openModal('add-galeri-modal');
 }
 
 async function saveGaleri() {
   const judul = document.getElementById('galeri-judul')?.value.trim();
-  const foto_url = document.getElementById('galeri-url')?.value.trim();
+  const mode  = document.querySelector('input[name="galeri-attach-mode"]:checked')?.value || 'file';
+  let foto_url = '';
+
+  if (mode === 'file') {
+    foto_url = document.getElementById('galeri-url')?.value.trim();
+  } else {
+    const rawLink = document.getElementById('galeri-link-input')?.value.trim() || '';
+    foto_url = typeof convertGoogleDriveUrl === 'function' ? convertGoogleDriveUrl(rawLink) : rawLink;
+  }
+
   const kategori = document.getElementById('galeri-kategori')?.value;
   const divisi = document.getElementById('galeri-divisi')?.value;
   const periode = document.getElementById('galeri-periode')?.value || '2025/2026';
   const deskripsi = document.getElementById('galeri-deskripsi')?.value.trim();
 
   if (!judul || !foto_url) {
-    showToast('Judul foto dan URL foto wajib diisi!', 'error');
+    showToast('Judul foto dan Foto Galeri wajib diisi/diunggah!', 'error');
     return;
   }
 

@@ -227,7 +227,7 @@
           </div>
           <div class="flex gap-2">
             <button class="btn btn-ghost btn-sm" onclick="exportPencapaianCSV()">📥 Export</button>
-            <button class="btn btn-primary btn-sm admin-only" style="display:none" onclick="openModal('add-ach-modal')">+ Tambah Prestasi</button>
+            <button class="btn btn-primary btn-sm admin-only" style="display:none" onclick="openAddAchModal()">+ Tambah Prestasi</button>
           </div>
         </div>
         <div class="filter-bar mb-3" id="ach-filter-kat"></div>
@@ -338,7 +338,7 @@
           </div>
           <div class="flex gap-2">
             <button class="btn btn-ghost btn-sm" onclick="exportRapatCSV()">📥 Export CSV</button>
-            <button class="btn btn-primary btn-sm admin-only" style="display:none" onclick="openModal('add-rapat-modal')">+ Catat Rapat</button>
+            <button class="btn btn-primary btn-sm admin-only" style="display:none" onclick="openAddRapatModal()">+ Catat Rapat</button>
           </div>
         </div>
         <div id="rapat-stats" class="mb-4"></div>
@@ -808,7 +808,7 @@
 
 <!-- ADD GALERI MODAL -->
 <div id="add-galeri-modal" class="modal-overlay">
-  <div class="modal modal-md">
+  <div class="modal modal-lg" style="max-width:680px;">
     <div class="modal-header">
       <span class="modal-title">➕ Tambah Foto Galeri</span>
       <button class="modal-close" onclick="closeModal('add-galeri-modal')">✕</button>
@@ -818,15 +818,35 @@
         <label class="form-label required">Judul Foto</label>
         <input type="text" class="form-control" id="galeri-judul" placeholder="Contoh: Latihan Kepemimpinan Mahasiswa 2025">
       </div>
+
       <div>
-        <label class="form-label required">Foto Galeri (Upload File atau Masukkan URL)</label>
-        <input type="file" accept="image/*" class="form-control mb-2" onchange="handleImageFileUpload(this, 'galeri-url', 'galeri-foto-preview')">
-        <input type="text" class="form-control" id="galeri-url" placeholder="https://... atau data:image/...">
-        <div id="galeri-foto-preview"></div>
+        <label class="form-label required">Foto Galeri</label>
+        <div class="flex gap-4 mb-2 text-sm">
+          <label class="flex items-center gap-1 cursor-pointer font-bold">
+            <input type="radio" name="galeri-attach-mode" value="file" checked onchange="toggleFormAttachMode('galeri-file-wrap', 'galeri-link-wrap', 'file')"> 📁 Upload File
+          </label>
+          <label class="flex items-center gap-1 cursor-pointer font-bold">
+            <input type="radio" name="galeri-attach-mode" value="link" onchange="toggleFormAttachMode('galeri-file-wrap', 'galeri-link-wrap', 'link')"> 🔗 Link URL / Drive
+          </label>
+        </div>
+
+        <!-- FILE MODE -->
+        <div id="galeri-file-wrap">
+          <input type="file" accept="image/*" class="form-control mb-2" onchange="handleImageFileUpload(this, 'galeri-url', 'galeri-foto-preview', 16/10)">
+          <div id="galeri-foto-preview"></div>
+        </div>
+
+        <!-- LINK MODE -->
+        <div id="galeri-link-wrap" style="display:none;">
+          <input type="text" class="form-control" id="galeri-link-input" placeholder="https://... (URL foto direct atau link Google Drive)">
+        </div>
+
+        <input type="hidden" id="galeri-url">
       </div>
-      <div class="grid grid-3 gap-3">
-        <div>
-          <label class="form-label required">Periode</label>
+
+      <div class="form-row cols-2">
+        <div class="form-group">
+          <label class="form-label required">Periode Kepengurusan</label>
           <select class="form-control" id="galeri-periode">
             <option value="2025/2026">2025/2026</option>
             <option value="2024/2025">2024/2025</option>
@@ -834,8 +854,8 @@
             <option value="2022/2023">2022/2023</option>
           </select>
         </div>
-        <div>
-          <label class="form-label required">Kategori</label>
+        <div class="form-group">
+          <label class="form-label required">Kategori Event</label>
           <select class="form-control" id="galeri-kategori">
             <option value="LKM">LKM</option>
             <option value="Malam Kebersamaan">Malam Kebersamaan</option>
@@ -845,8 +865,11 @@
             <option value="Lainnya">Lainnya</option>
           </select>
         </div>
-        <div>
-          <label class="form-label required">Divisi</label>
+      </div>
+
+      <div class="form-row cols-2">
+        <div class="form-group">
+          <label class="form-label required">Divisi Penyelenggara</label>
           <select class="form-control" id="galeri-divisi">
             <option value="Inti">Inti</option>
             <option value="Pendamping Pengurus">Pendamping Pengurus</option>
@@ -859,10 +882,10 @@
             <option value="Kerohanian">Kerohanian</option>
           </select>
         </div>
-      </div>
-      <div>
-        <label class="form-label">Deskripsi &amp; Tanggal</label>
-        <input type="text" class="form-control" id="galeri-deskripsi" placeholder="Deskripsi singkat kegiatan atau tanggal...">
+        <div class="form-group">
+          <label class="form-label">Deskripsi &amp; Tanggal</label>
+          <input type="text" class="form-control" id="galeri-deskripsi" placeholder="Deskripsi singkat atau tanggal...">
+        </div>
       </div>
     </div>
     <div class="modal-footer">

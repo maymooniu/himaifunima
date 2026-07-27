@@ -172,7 +172,7 @@ async function adminTabBerita(ct) {
   ct.innerHTML = `
     <div class="section-header mb-4">
       <div><div class="card-title" style="font-size:16px;">${data.length} Berita</div></div>
-      <button class="btn btn-primary btn-sm" onclick="openModal('add-berita-modal')">+ Tambah Berita</button>
+      <button class="btn btn-primary btn-sm" onclick="openAddBeritaModal()">+ Tambah Berita</button>
     </div>
     <div class="table-wrap">
       <table>
@@ -260,7 +260,7 @@ async function adminTabPencapaian(ct) {
   ct.innerHTML = `
     <div class="section-header mb-4">
       <div><div class="card-title" style="font-size:16px;">${data.length} Prestasi</div></div>
-      <button class="btn btn-primary btn-sm" onclick="openModal('add-ach-modal')">+ Tambah Prestasi</button>
+      <button class="btn btn-primary btn-sm" onclick="openAddAchModal()">+ Tambah Prestasi</button>
     </div>
     <div class="table-wrap">
       <table>
@@ -290,7 +290,7 @@ async function adminTabUsers(ct) {
   ct.innerHTML = `
     <div class="section-header mb-4">
       <div><div class="card-title" style="font-size:16px;">${users.length} Users Terdaftar</div></div>
-      <button class="btn btn-primary btn-sm" onclick="openModal('add-user-modal')">+ Tambah User</button>
+      <button class="btn btn-primary btn-sm" onclick="openAddUserModal()">+ Tambah User</button>
     </div>
     <div class="info-box mb-4"><span>ℹ️</span><span>3 tipe: <strong>admin</strong> (akses penuh), <strong>pengurus</strong> (lihat halaman organisasi), <strong>user</strong> (publik).</span></div>
     <div class="table-wrap">
@@ -637,9 +637,31 @@ async function updateProker() {
 }
 
 // ============================================================
+// ============================================================
 // RAPAT MODAL (ADD/EDIT)
 // ============================================================
 let _editingRapatId = null;
+
+function openAddRapatModal() {
+  _editingRapatId = null;
+  const titleEl = document.getElementById('add-rapat-title');
+  if (titleEl) titleEl.textContent = '📝 Catat Rapat';
+  const fields = [
+    'r-judul', 'r-tanggal', 'r-jenis', 'r-mulai', 'r-selesai',
+    'r-tempat', 'r-pimpinan', 'r-hadir', 'r-total', 'r-notulis',
+    'r-spontan', 'r-agenda', 'r-notulen', 'r-kesimpulan', 'r-tindak'
+  ];
+  fields.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      if (id === 'r-jenis') el.value = 'Bulanan';
+      else el.value = '';
+    }
+  });
+  const btnSave = document.getElementById('add-rapat-modal')?.querySelector('.modal-footer .btn-primary');
+  if (btnSave) btnSave.onclick = saveRapat;
+  openModal('add-rapat-modal');
+}
 
 async function saveRapat() {
   const judul   = document.getElementById('r-judul')?.value.trim() || '';
@@ -669,6 +691,7 @@ async function saveRapat() {
       await DB.addRapat(data);
       showToast('Rapat dicatat!', 'success');
     }
+    _editingRapatId = null;
     closeModal('add-rapat-modal');
     await renderRapat();
   } catch(e) { showToast('Gagal simpan: ' + e.message, 'error'); }
@@ -698,9 +721,27 @@ async function openEditRapatModal(id) {
 }
 
 // ============================================================
-// ACHIEVEMENT MODAL (EDIT)
+// ACHIEVEMENT MODAL (ADD/EDIT)
 // ============================================================
 let _editingAchId = null;
+
+function openAddAchModal() {
+  _editingAchId = null;
+  const titleEl = document.getElementById('ach-modal-title');
+  if (titleEl) titleEl.textContent = '🏆 Tambah Pencapaian';
+  const fields = ['a-nama', 'a-prestasi', 'a-kategori', 'a-tanggal'];
+  fields.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  const elLevel = document.getElementById('a-level');
+  if (elLevel) elLevel.value = 'Nasional';
+  const elMedal = document.getElementById('a-medal');
+  if (elMedal) elMedal.value = '🏆';
+  const saveBtn = document.getElementById('ach-modal-save');
+  if (saveBtn) saveBtn.onclick = saveAchievement;
+  openModal('add-ach-modal');
+}
 
 async function openEditAchModal(id) {
   const p = _achData.find(x => x.id === id);
@@ -835,6 +876,24 @@ async function saveBerita() {
   } catch(e) { showToast('Gagal: ' + e.message, 'error'); }
 }
 
+function openAddBeritaModal() {
+  const modal = document.getElementById('add-berita-modal');
+  if (modal) delete modal.dataset.editId;
+  const titleEl = document.getElementById('berita-modal-title');
+  if (titleEl) titleEl.textContent = '📰 Tambah Berita';
+  ['bn-judul', 'bn-penulis', 'bn-excerpt', 'bn-konten'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  const elKat = document.getElementById('bn-kategori');
+  if (elKat) elKat.value = 'Umum';
+  const elEmoji = document.getElementById('bn-emoji');
+  if (elEmoji) elEmoji.value = '📰';
+  const elFeat = document.getElementById('bn-featured');
+  if (elFeat) elFeat.checked = false;
+  openModal('add-berita-modal');
+}
+
 async function openEditBeritaModal(id) {
   const data = await DB.getBerita();
   const b = data.find(x => x.id === id);
@@ -880,6 +939,19 @@ async function saveKegiatan() {
 // USER MANAGEMENT
 // ============================================================
 let _editingUserId = null;
+
+function openAddUserModal() {
+  _editingUserId = null;
+  const titleEl = document.getElementById('user-modal-title');
+  if (titleEl) titleEl.textContent = '👤 Tambah User';
+  ['u-username', 'u-password', 'u-display'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  const roleEl = document.getElementById('u-role');
+  if (roleEl) roleEl.value = 'pengurus';
+  openModal('add-user-modal');
+}
 
 async function saveUser() {
   const username = (document.getElementById('u-username')?.value || '').trim().toLowerCase();
