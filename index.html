@@ -153,12 +153,12 @@
               <option value="all">Semua Divisi</option>
               <option value="Semua Divisi">Umum (Semua)</option>
               <option value="Inti">Inti</option>
-              <option value="Akademik &amp; Keilmuan">Akademik &amp; Keilmuan</option>
-              <option value="PSDM">PSDM</option>
-              <option value="Kominfo">Kominfo</option>
-              <option value="Mikat">Mikat</option>
+              <option value="Akademik">Akademik</option>
+              <option value="POSDM">POSDM</option>
+              <option value="Media &amp; Komunikasi">Media &amp; Komunikasi</option>
+              <option value="Minat &amp; Bakat">Minat &amp; Bakat</option>
               <option value="Hubungan Masyarakat">Hubungan Masyarakat</option>
-              <option value="Kewirausahaan">Kewirausahaan</option>
+              <option value="Kewirausahaan &amp; Ekonomi Kreatif">Kewirausahaan &amp; Ekonomi Kreatif</option>
             </select>
           </div>
           <div id="arsip-lpj-list"><div class="loading-wrap"><div class="spinner"></div></div></div>
@@ -201,12 +201,12 @@
           </select>
           <select class="form-control" style="width:auto;" id="proker-filter-divisi" onchange="filterProker()">
             <option value="all">Semua Divisi</option>
-            <option value="Akademik &amp; Keilmuan">Akademik &amp; Keilmuan</option>
-            <option value="PSDM">PSDM</option>
-            <option value="Kominfo">Kominfo</option>
-            <option value="Mikat">Mikat</option>
+            <option value="Akademik">Akademik</option>
+            <option value="POSDM">POSDM</option>
+            <option value="Media &amp; Komunikasi">Media &amp; Komunikasi</option>
+            <option value="Minat &amp; Bakat">Minat &amp; Bakat</option>
             <option value="Hubungan Masyarakat">Hubungan Masyarakat</option>
-            <option value="Kewirausahaan">Kewirausahaan</option>
+            <option value="Kewirausahaan &amp; Ekonomi Kreatif">Kewirausahaan &amp; Ekonomi Kreatif</option>
           </select>
           <div class="search-input-wrap" style="flex:1;min-width:180px;max-width:260px;">
             <span class="search-icon">🔍</span>
@@ -615,7 +615,7 @@
       <div class="form-group"><label class="form-label">Judul Artikel *</label><input type="text" class="form-control" id="b-judul" placeholder="Judul yang menarik dan deskriptif..."></div>
       <div class="form-row cols-2">
         <div class="form-group"><label class="form-label">Nama Penulis *</label><input type="text" class="form-control" id="b-penulis" placeholder="Nama lengkap..."></div>
-        <div class="form-group"><label class="form-label">Divisi / Asal</label><select class="form-control" id="b-divisi"><option>Akademik &amp; Keilmuan</option><option>Kominfo</option><option>PSDM</option><option>Mikat</option><option>Umum</option></select></div>
+        <div class="form-group"><label class="form-label">Divisi / Asal</label><select class="form-control" id="b-divisi"><option>Akademik</option><option>Media &amp; Komunikasi</option><option>POSDM</option><option>Minat &amp; Bakat</option><option>Umum</option></select></div>
         <div class="form-group"><label class="form-label">Emoji Artikel</label><input type="text" class="form-control" id="b-emoji" placeholder="📝" maxlength="4"></div>
         <div class="form-group"><label class="form-label">Tags (pisah koma)</label><input type="text" class="form-control" id="b-tags" placeholder="AI, Python, Tutorial..."></div>
       </div>
@@ -690,7 +690,7 @@
       <div class="form-group"><label class="form-label">Judul LPJ *</label><input type="text" class="form-control" id="lpj-judul" placeholder="Judul LPJ..."></div>
       <div class="form-row cols-2">
         <div class="form-group"><label class="form-label">Periode *</label><select class="form-control" id="lpj-periode"><option value="2025/2026">2025/2026</option><option value="2024/2025">2024/2025</option><option value="2023/2024">2023/2024</option><option value="2022/2023">2022/2023</option><option value="2021/2022">2021/2022</option></select></div>
-        <div class="form-group"><label class="form-label">Divisi</label><select class="form-control" id="lpj-divisi"><option value="Semua Divisi">Semua Divisi</option><option>Inti</option><option>Akademik &amp; Keilmuan</option><option>PSDM</option><option>Kominfo</option><option>Mikat</option><option>Hubungan Masyarakat</option><option>Kewirausahaan</option></select></div>
+        <div class="form-group"><label class="form-label">Divisi</label><select class="form-control" id="lpj-divisi"><option value="Semua Divisi">Semua Divisi</option><option>Inti</option><option>Akademik</option><option>POSDM</option><option>Media &amp; Komunikasi</option><option>Minat &amp; Bakat</option><option>Hubungan Masyarakat</option><option>Kewirausahaan &amp; Ekonomi Kreatif</option></select></div>
         <div class="form-group"><label class="form-label">Tanggal</label><input type="date" class="form-control" id="lpj-tanggal"></div>
         <div class="form-group"><label class="form-label">Ukuran File</label><input type="text" class="form-control" id="lpj-ukuran" placeholder="2.4 MB..."></div>
       </div>
@@ -779,7 +779,7 @@
     <div class="modal-body">
       <div class="form-group"><label class="form-label">Judul Kegiatan *</label><input type="text" class="form-control" id="kg-judul" placeholder="Nama kegiatan..."></div>
       <div class="form-row cols-2">
-        <div class="form-group"><label class="form-label">Divisi</label><select class="form-control" id="kg-divisi"><option value="">Semua/Umum</option><option>Inti</option><option>Akademik &amp; Keilmuan</option><option>PSDM</option><option>Kominfo</option><option>Mikat</option><option>Hubungan Masyarakat</option><option>Kewirausahaan</option></select></div>
+        <div class="form-group"><label class="form-label">Divisi</label><select class="form-control" id="kg-divisi"><option value="">Semua/Umum</option><option>Inti</option><option>Akademik</option><option>POSDM</option><option>Media &amp; Komunikasi</option><option>Minat &amp; Bakat</option><option>Hubungan Masyarakat</option><option>Kewirausahaan &amp; Ekonomi Kreatif</option></select></div>
         <div class="form-group"><label class="form-label">Periode</label><select class="form-control" id="kg-periode"><option>2025/2026</option><option>2024/2025</option><option>2023/2024</option><option>2022/2023</option></select></div>
         <div class="form-group"><label class="form-label">Tanggal</label><input type="date" class="form-control" id="kg-tanggal"></div>
         <div class="form-group"><label class="form-label">Emoji</label><input type="text" class="form-control" id="kg-emoji" placeholder="📸" maxlength="4"></div>
@@ -874,11 +874,11 @@
             <option value="Inti">Inti</option>
             <option value="Pendamping Pengurus">Pendamping Pengurus</option>
             <option value="Akademik">Akademik</option>
-            <option value="PSDM">PSDM</option>
+            <option value="POSDM">POSDM</option>
             <option value="Media &amp; Komunikasi">Media &amp; Komunikasi</option>
-            <option value="Minat Bakat">Minat Bakat</option>
+            <option value="Minat &amp; Bakat">Minat &amp; Bakat</option>
             <option value="Hubungan Masyarakat">Hubungan Masyarakat</option>
-            <option value="Kewirausahaan">Kewirausahaan</option>
+            <option value="Kewirausahaan &amp; Ekonomi Kreatif">Kewirausahaan &amp; Ekonomi Kreatif</option>
             <option value="Kerohanian">Kerohanian</option>
           </select>
         </div>
@@ -952,6 +952,7 @@
 // APP BOOTSTRAP
 // ============================================================
 (async function init() {
+  restoreSession();
   try { await initSettings(); }
   catch(e) { console.warn('[HIMAIF] DB not available, using defaults:', e.message); }
 

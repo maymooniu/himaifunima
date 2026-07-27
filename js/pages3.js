@@ -531,7 +531,8 @@ async function savePengurus() {
     await DB.addPengurus(data);
     closeModal('pengurus-modal');
     showToast(`${data.nama} berhasil ditambahkan!`, 'success');
-    await renderPengurus();
+    if (STATE.activePage === 'admin') await adminTab('pengurus');
+    else await renderPengurus();
   } catch(e) { showToast('Gagal simpan: ' + e.message, 'error'); }
 }
 
@@ -542,7 +543,8 @@ async function updatePengurus() {
     await DB.updatePengurus(_editingPengurusId, data);
     closeModal('pengurus-modal');
     showToast('Data pengurus diperbarui!', 'success');
-    await renderPengurus();
+    if (STATE.activePage === 'admin') await adminTab('pengurus');
+    else await renderPengurus();
   } catch(e) { showToast('Gagal update: ' + e.message, 'error'); }
 }
 
@@ -624,8 +626,8 @@ async function saveProker() {
     closeModal('proker-modal');
     showToast('Proker ditambahkan!', 'success');
     _prokerCache.unshift({ ...data, id: res?.[0]?.id });
-    renderProkerStats(_prokerCache);
-    filterProker();
+    if (STATE.activePage === 'admin') await adminTab('proker');
+    else { renderProkerStats(_prokerCache); filterProker(); }
   } catch(e) { showToast('Gagal simpan: ' + e.message, 'error'); }
 }
 
@@ -637,8 +639,8 @@ async function updateProker() {
     showToast('Proker diperbarui!', 'success');
     const idx = _prokerCache.findIndex(p => p.id === _editingProkerId);
     if (idx !== -1) _prokerCache[idx] = { ..._prokerCache[idx], ...data };
-    renderProkerStats(_prokerCache);
-    filterProker();
+    if (STATE.activePage === 'admin') await adminTab('proker');
+    else { renderProkerStats(_prokerCache); filterProker(); }
   } catch(e) { showToast('Gagal update: ' + e.message, 'error'); }
 }
 
@@ -786,7 +788,8 @@ async function saveAchievement() {
     _editingAchId = null;
     document.getElementById('ach-modal-save').onclick = saveAchievement;
     document.getElementById('ach-modal-title').textContent = '🏆 Tambah Pencapaian';
-    await renderAchievement();
+    if (STATE.activePage === 'admin') await adminTab('pencapaian');
+    else await renderAchievement();
   } catch(e) { showToast('Gagal simpan: ' + e.message, 'error'); }
 }
 

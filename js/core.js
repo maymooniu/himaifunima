@@ -18,11 +18,11 @@ const DIVISI_LIST = [
   'Inti',
   'Pendamping Pengurus',
   'Akademik',
-  'PSDM',
+  'POSDM',
   'Media & Komunikasi',
-  'Minat Bakat',
+  'Minat & Bakat',
   'Hubungan Masyarakat',
-  'Kewirausahaan',
+  'Kewirausahaan & Ekonomi Kreatif',
 ];
 
 // Pages accessible by role
@@ -83,6 +83,24 @@ async function initSettings() {
 // ============================================================
 // AUTH
 // ============================================================
+function restoreSession() {
+  try {
+    const raw = localStorage.getItem('himaif_session');
+    if (raw) {
+      const data = JSON.parse(raw);
+      if (data && data.role) {
+        STATE.role        = data.role;
+        STATE.username    = data.username || '';
+        STATE.displayName = data.displayName || '';
+        return true;
+      }
+    }
+  } catch(e) {
+    console.warn('[HIMAIF] Restore session failed:', e);
+  }
+  return false;
+}
+
 async function doLogin() {
   const username = (document.getElementById('login-username')?.value || '').trim().toLowerCase();
   const password  = document.getElementById('login-pwd')?.value || '';
@@ -101,6 +119,15 @@ async function doLogin() {
     STATE.role        = user.role;
     STATE.username    = user.username;
     STATE.displayName = user.display_name || user.username;
+
+    try {
+      localStorage.setItem('himaif_session', JSON.stringify({
+        role: STATE.role,
+        username: STATE.username,
+        displayName: STATE.displayName,
+      }));
+    } catch(e) {}
+
     closeModal('login-modal');
     updateTopbar();
     updateSidebar();
@@ -118,6 +145,7 @@ function doLogout() {
   STATE.role        = 'public';
   STATE.username    = '';
   STATE.displayName = '';
+  try { localStorage.removeItem('himaif_session'); } catch(e) {}
   updateTopbar();
   updateSidebar();
   applyAdminUI();

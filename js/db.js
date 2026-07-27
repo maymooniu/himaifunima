@@ -11,7 +11,7 @@ const MOCK_GALERI = [
     judul: 'Latihan Kepemimpinan Mahasiswa (LKM) 2025',
     foto_url: 'https://images.unsplash.com/photo-1523580494863-6f3031224c94?auto=format&fit=crop&w=800&q=80',
     kategori: 'LKM',
-    divisi: 'PSDM',
+    divisi: 'POSDM',
     periode: '2025/2026',
     deskripsi: 'Kegiatan pembentukan karakter dan kepemimpinan calon pengurus HIMAIF.',
     tanggal: '15 Februari 2025'
@@ -21,7 +21,7 @@ const MOCK_GALERI = [
     judul: 'Malam Kebersamaan HIMAIF',
     foto_url: 'https://images.unsplash.com/photo-1511632765486-a01980e01a18?auto=format&fit=crop&w=800&q=80',
     kategori: 'Malam Kebersamaan',
-    divisi: 'Minat Bakat',
+    divisi: 'Minat & Bakat',
     periode: '2025/2026',
     deskripsi: 'Ajang akrab dan kebersamaan seluruh anggota dan pengurus HIMAIF.',
     tanggal: '20 Januari 2025'
@@ -71,9 +71,9 @@ const MOCK_GALERI = [
     judul: 'Seminar Akademik & Olimpiade Koding 2024',
     foto_url: 'https://images.unsplash.com/photo-1542744094-3a31727202b3?auto=format&fit=crop&w=800&q=80',
     kategori: 'Pelatihan',
-    divisi: 'Akademik & Keilmuan',
+    divisi: 'Akademik',
     periode: '2024/2025',
-    deskripsi: 'Seminar sains dan algoritma oleh divisi Akademik & Keilmuan.',
+    deskripsi: 'Seminar sains dan algoritma oleh divisi Akademik.',
     tanggal: '14 Mei 2024'
   }
 ];

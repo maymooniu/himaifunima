@@ -215,12 +215,12 @@ async function renderAbout() {
       ${[
         {icon:'⚙️',  name:'Inti Himpunan',       desc:'Ketua, Wakil, Sekretaris, Bendahara — pimpinan organisasi.', color:'var(--blue-primary)'},
         {icon:'🛡️',  name:'Pendamping Pengurus', desc:'Pembina, penasihat, dan pendamping jalannya roda organisasi.', color:'var(--cyan, #06b6d4)'},
-        {icon:'🎓',  name:'Akademik & Keilmuan', desc:'Peningkatan kompetensi dan kegiatan akademik mahasiswa TI.', color:'var(--blue-xlight)'},
-        {icon:'🤝',  name:'PSDM',                desc:'Pengembangan SDM, rekrutmen, dan pembinaan anggota.', color:'var(--success)'},
-        {icon:'📡',  name:'Kominfo',             desc:'Komunikasi, media sosial, dan branding HIMAIF.', color:'var(--teal-light)'},
-        {icon:'🎭',  name:'Mikat',               desc:'Minat, bakat, dan hubungan sosial kemahasiswaan.', color:'var(--purple)'},
-        {icon:'🌐',  name:'Humas (Hubungan Masyarakat)', desc:'Hubungan eksternal, kemitraan, dan pengabdian masyarakat.', color:'var(--orange)'},
-        {icon:'💼',  name:'Kewirausahaan',       desc:'Wirausaha, sponsorship, dan pemasukan organisasi.', color:'var(--warning)'},
+        {icon:'🎓',  name:'Akademik',            desc:'Peningkatan kompetensi dan kegiatan akademik mahasiswa TI.', color:'var(--blue-xlight)'},
+        {icon:'🤝',  name:'POSDM',               desc:'Pengembangan SDM, rekrutmen, dan pembinaan anggota.', color:'var(--success)'},
+        {icon:'📡',  name:'Media & Komunikasi',  desc:'Komunikasi, media sosial, dan branding HIMAIF.', color:'var(--teal-light)'},
+        {icon:'🎭',  name:'Minat & Bakat',        desc:'Minat, bakat, dan hubungan sosial kemahasiswaan.', color:'var(--purple)'},
+        {icon:'🌐',  name:'Hubungan Masyarakat', desc:'Hubungan eksternal, kemitraan, dan pengabdian masyarakat.', color:'var(--orange)'},
+        {icon:'💼',  name:'Kewirausahaan & Ekonomi Kreatif', desc:'Wirausaha, sponsorship, dan pemasukan organisasi.', color:'var(--warning)'},
       ].map(d => `<div class="card" style="border-top:3px solid ${d.color};">
         <div class="card-body">
           <div style="font-size:28px;margin-bottom:10px;">${d.icon}</div>
