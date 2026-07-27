@@ -97,13 +97,19 @@ function filterProker() {
 }
 
 async function deleteProker(id, nama) {
-  if (!confirm(`Hapus proker "${nama}"?`)) return;
+  if (!(await showConfirm({
+    title: 'Hapus Program Kerja',
+    message: `Apakah Anda yakin ingin menghapus proker "${nama}"?`,
+    confirmText: 'Hapus Proker',
+    type: 'danger',
+    icon: '📋'
+  }))) return;
   try {
     await DB.deleteProker(id);
     _prokerCache = _prokerCache.filter(p => p.id !== id);
-    renderProkerStats(_prokerCache);
-    filterProker();
     showToast('Proker dihapus.', 'success');
+    if (STATE.activePage === 'admin') await adminTab('proker');
+    else { renderProkerStats(_prokerCache); filterProker(); }
   } catch(e) { showToast('Gagal: ' + e.message, 'error'); }
 }
 
@@ -163,12 +169,19 @@ function renderAchList(kat, lvl) {
 }
 
 async function deleteAch(id, nama) {
-  if (!confirm(`Hapus prestasi "${nama}"?`)) return;
+  if (!(await showConfirm({
+    title: 'Hapus Prestasi',
+    message: `Apakah Anda yakin ingin menghapus prestasi "${nama}"?`,
+    confirmText: 'Hapus Prestasi',
+    type: 'danger',
+    icon: '🏆'
+  }))) return;
   try {
     await DB.deletePencapaian(id);
     showToast('Prestasi dihapus.', 'success');
     _achData = _achData.filter(p => p.id !== id);
-    renderAchList(_achKat, _achLvl);
+    if (STATE.activePage === 'admin') await adminTab('pencapaian');
+    else renderAchList(_achKat, _achLvl);
   } catch(e) { showToast('Gagal: ' + e.message, 'error'); }
 }
 
@@ -229,13 +242,36 @@ function filterProject(kat, btn) {
 }
 
 async function approveProject(id) {
-  try { await DB.approveProject(id); showToast('Project diapprove!', 'success'); await renderProjects(); }
-  catch(e) { showToast('Gagal: ' + e.message, 'error'); }
+  try {
+    await DB.approveProject(id);
+    showToast('Project diapprove!', 'success');
+    if (STATE.activePage === 'admin') await adminTab('project');
+    else await renderProjects();
+  } catch(e) { showToast('Gagal: ' + e.message, 'error'); }
+}
+async function rejectProject(id) {
+  try {
+    await DB.rejectProject(id);
+    showToast('Project ditolak.', 'info');
+    if (STATE.activePage === 'admin') await adminTab('project');
+    else await renderProjects();
+  } catch(e) { showToast('Gagal: ' + e.message, 'error'); }
 }
 async function deleteProject(id) {
-  if (!confirm('Hapus project ini?')) return;
-  try { await DB.deleteProject(id); showToast('Project dihapus.', 'success'); await renderProjects(); }
-  catch(e) { showToast('Gagal: ' + e.message, 'error'); }
+  if (!(await showConfirm({
+    title: 'Hapus Project',
+    message: 'Apakah Anda yakin ingin menghapus project ini?',
+    confirmText: 'Hapus Project',
+    type: 'danger',
+    icon: '💡'
+  }))) return;
+  try {
+    await DB.deleteProject(id);
+    showToast('Project dihapus.', 'success');
+    _projectData = _projectData.filter(p => p.id !== id);
+    if (STATE.activePage === 'admin') await adminTab('project');
+    else filterProject(_activeProjectKat, null);
+  } catch(e) { showToast('Gagal: ' + e.message, 'error'); }
 }
 
 // ============================================================
@@ -308,17 +344,36 @@ function openBlogDetail(id) {
 }
 
 async function approveBlog(id) {
-  try { await DB.approveBlog(id); showToast('Artikel dipublish!', 'success'); await renderBlog(); }
-  catch(e) { showToast('Gagal: ' + e.message, 'error'); }
+  try {
+    await DB.approveBlog(id);
+    showToast('Artikel dipublish!', 'success');
+    if (STATE.activePage === 'admin') await adminTab('blog');
+    else await renderBlog();
+  } catch(e) { showToast('Gagal: ' + e.message, 'error'); }
 }
 async function rejectBlog(id) {
-  try { await DB.rejectBlog(id); showToast('Artikel ditolak.', 'info'); await renderBlog(); }
-  catch(e) { showToast('Gagal: ' + e.message, 'error'); }
+  try {
+    await DB.rejectBlog(id);
+    showToast('Artikel ditolak.', 'info');
+    if (STATE.activePage === 'admin') await adminTab('blog');
+    else await renderBlog();
+  } catch(e) { showToast('Gagal: ' + e.message, 'error'); }
 }
 async function deleteBlog(id) {
-  if (!confirm('Hapus artikel ini?')) return;
-  try { await DB.deleteBlog(id); showToast('Artikel dihapus.', 'success'); await renderBlog(); }
-  catch(e) { showToast('Gagal: ' + e.message, 'error'); }
+  if (!(await showConfirm({
+    title: 'Hapus Artikel',
+    message: 'Apakah Anda yakin ingin menghapus artikel blog ini?',
+    confirmText: 'Hapus Artikel',
+    type: 'danger',
+    icon: '✍️'
+  }))) return;
+  try {
+    await DB.deleteBlog(id);
+    showToast('Artikel dihapus.', 'success');
+    _blogData = _blogData.filter(b => b.id !== id);
+    if (STATE.activePage === 'admin') await adminTab('blog');
+    else renderBlogList();
+  } catch(e) { showToast('Gagal: ' + e.message, 'error'); }
 }
 
 // ============================================================
@@ -424,7 +479,13 @@ function openRapatDetail(id) {
 }
 
 async function deleteRapat(id) {
-  if (!confirm('Hapus catatan rapat ini?')) return;
+  if (!(await showConfirm({
+    title: 'Hapus Catatan Rapat',
+    message: 'Apakah Anda yakin ingin menghapus catatan rapat ini?',
+    confirmText: 'Hapus Rapat',
+    type: 'danger',
+    icon: '📝'
+  }))) return;
   try {
     await DB.deleteRapat(id);
     showToast('Rapat dihapus.', 'success');
@@ -563,7 +624,13 @@ async function updateAspStatus(id, status) {
 }
 
 async function deleteAsp(id) {
-  if (!confirm('Hapus aspirasi ini?')) return;
+  if (!(await showConfirm({
+    title: 'Hapus Aspirasi',
+    message: 'Apakah Anda yakin ingin menghapus aspirasi ini?',
+    confirmText: 'Hapus Aspirasi',
+    type: 'danger',
+    icon: '📢'
+  }))) return;
   try {
     await DB.deleteAspirasi(id);
     showToast('Aspirasi dihapus.', 'success');
@@ -823,7 +890,13 @@ async function saveGaleri() {
 }
 
 async function deleteGaleri(id) {
-  if (!confirm('Apakah Anda yakin ingin menghapus foto ini?')) return;
+  if (!(await showConfirm({
+    title: 'Hapus Foto Galeri',
+    message: 'Apakah Anda yakin ingin menghapus foto ini dari galeri?',
+    confirmText: 'Hapus Foto',
+    type: 'danger',
+    icon: '📷'
+  }))) return;
   try {
     await DB.deleteGaleri(id);
     showToast('Foto berhasil dihapus.', 'info');

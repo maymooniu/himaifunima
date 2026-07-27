@@ -423,11 +423,18 @@ function openMemberModal(id) {
 }
 
 async function deletePengurus(id, nama) {
-  if (!confirm(`Hapus pengurus "${nama}"?`)) return;
+  if (!(await showConfirm({
+    title: 'Hapus Data Pengurus',
+    message: `Apakah Anda yakin ingin menghapus pengurus "${nama}"?`,
+    confirmText: 'Hapus Pengurus',
+    type: 'danger',
+    icon: '👥'
+  }))) return;
   try {
     await DB.deletePengurus(id);
     showToast(`${nama} dihapus.`, 'success');
-    await renderPengurus();
+    if (STATE.activePage === 'admin') await adminTab('pengurus');
+    else await renderPengurus();
   } catch(e) { showToast('Gagal hapus: ' + e.message, 'error'); }
 }
 
@@ -549,16 +556,29 @@ async function renderArsipKegiatan() {
 }
 
 async function deleteLPJ(id) {
-  if (!confirm('Hapus LPJ ini?')) return;
+  if (!(await showConfirm({
+    title: 'Hapus Arsip LPJ',
+    message: 'Apakah Anda yakin ingin menghapus dokumen LPJ ini?',
+    confirmText: 'Hapus LPJ',
+    type: 'danger',
+    icon: '📄'
+  }))) return;
   try {
     await DB.deleteLPJ(id);
     showToast('LPJ dihapus.', 'success');
-    await renderArsipLPJ();
+    if (STATE.activePage === 'admin') await adminTab('lpj');
+    else await renderArsipLPJ();
   } catch(e) { showToast('Gagal: ' + e.message, 'error'); }
 }
 
 async function deleteKegiatan(id) {
-  if (!confirm('Hapus kegiatan ini?')) return;
+  if (!(await showConfirm({
+    title: 'Hapus Kegiatan',
+    message: 'Apakah Anda yakin ingin menghapus arsip kegiatan ini?',
+    confirmText: 'Hapus Kegiatan',
+    type: 'danger',
+    icon: '📸'
+  }))) return;
   try {
     await DB.deleteKegiatan(id);
     showToast('Kegiatan dihapus.', 'success');

@@ -47,10 +47,16 @@ function renderAdmin() {
   adminTab('pengurus', document.querySelector('#admin-main-tabs .tab-btn'));
 }
 
-async function adminTab(tab, btn) {
-  document.getElementById('admin-main-tabs')?.querySelectorAll('.tab-btn')
-    .forEach(b => b.classList.remove('active'));
-  if (btn) btn.classList.add('active');
+async function adminTab(tab, btn = null) {
+  if (!btn) {
+    btn = document.querySelector(`#admin-main-tabs .tab-btn[onclick*="'${tab}'"]`) ||
+          document.querySelector('#admin-main-tabs .tab-btn.active');
+  }
+  if (btn) {
+    document.getElementById('admin-main-tabs')?.querySelectorAll('.tab-btn')
+      .forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
   const ct = document.getElementById('admin-tab-body');
   setLoading('admin-tab-body', true);
   try {
@@ -132,7 +138,7 @@ async function adminTabProker(ct) {
             <td>
               <div class="td-actions">
                 <button class="btn btn-ghost btn-sm" onclick="openEditProkerModal('${p.id}')">✏️</button>
-                <button class="btn btn-danger btn-sm" onclick="deleteProker('${p.id}','${escapeHtml(p.nama)}');adminTab('proker',null)">🗑️</button>
+                <button class="btn btn-danger btn-sm" onclick="deleteProker('${p.id}','${escapeHtml(p.nama)}')">🗑️</button>
               </div>
             </td>
           </tr>`).join('')}
@@ -159,7 +165,7 @@ async function adminTabLPJ(ct) {
             <td>${escapeHtml(l.divisi)}</td>
             <td>${formatDateShort(l.tanggal)}</td>
             <td>${l.file_url ? `<a href="${l.file_url}" class="btn btn-ghost btn-sm" target="_blank">⬇️</a>` : '<span class="text-muted text-xs">—</span>'}</td>
-            <td><button class="btn btn-danger btn-sm" onclick="deleteLPJ('${l.id}');adminTab('lpj',null)">🗑️</button></td>
+            <td><button class="btn btn-danger btn-sm" onclick="deleteLPJ('${l.id}')">🗑️</button></td>
           </tr>`).join('')}
         </tbody>
       </table>
@@ -187,7 +193,7 @@ async function adminTabBerita(ct) {
             <td>
               <div class="td-actions">
                 <button class="btn btn-ghost btn-sm" onclick="openEditBeritaModal('${b.id}')">✏️</button>
-                <button class="btn btn-danger btn-sm" onclick="deleteBerita('${b.id}');adminTab('berita',null)">🗑️</button>
+                <button class="btn btn-danger btn-sm" onclick="deleteBerita('${b.id}')">🗑️</button>
               </div>
             </td>
           </tr>`).join('')}
@@ -215,8 +221,8 @@ async function adminTabBlog(ct) {
             <td>${formatDateShort(b.created_at)}</td>
             <td>
               <div class="td-actions">
-                ${b.status === 'pending' ? `<button class="btn btn-success btn-sm" onclick="approveBlog('${b.id}');adminTab('blog',null)">✅</button><button class="btn btn-danger btn-sm" onclick="rejectBlog('${b.id}');adminTab('blog',null)">❌</button>` : ''}
-                <button class="btn btn-danger btn-sm" onclick="deleteBlog('${b.id}');adminTab('blog',null)">🗑️</button>
+                ${b.status === 'pending' ? `<button class="btn btn-success btn-sm" onclick="approveBlog('${b.id}')">✅</button><button class="btn btn-danger btn-sm" onclick="rejectBlog('${b.id}')">❌</button>` : ''}
+                <button class="btn btn-danger btn-sm" onclick="deleteBlog('${b.id}')">🗑️</button>
               </div>
             </td>
           </tr>`).join('')}
@@ -243,9 +249,9 @@ async function adminTabProject(ct) {
             <td>${getStatusBadge(p.status)}</td>
             <td>
               <div class="td-actions">
-                ${p.status === 'pending' ? `<button class="btn btn-success btn-sm" onclick="approveProject('${p.id}');adminTab('project',null)">✅ Approve</button>` : ''}
-                ${p.status === 'pending' ? `<button class="btn btn-danger btn-sm" onclick="DB.rejectProject('${p.id}').then(()=>{showToast('Ditolak','info');adminTab('project',null)}).catch(e=>showToast(e.message,'error'))">❌</button>` : ''}
-                <button class="btn btn-danger btn-sm" onclick="deleteProject('${p.id}');adminTab('project',null)">🗑️</button>
+                ${p.status === 'pending' ? `<button class="btn btn-success btn-sm" onclick="approveProject('${p.id}')">✅ Approve</button>` : ''}
+                ${p.status === 'pending' ? `<button class="btn btn-danger btn-sm" onclick="rejectProject('${p.id}')">❌</button>` : ''}
+                <button class="btn btn-danger btn-sm" onclick="deleteProject('${p.id}')">🗑️</button>
               </div>
             </td>
           </tr>`).join('')}
@@ -275,7 +281,7 @@ async function adminTabPencapaian(ct) {
             <td>
               <div class="td-actions">
                 <button class="btn btn-ghost btn-sm" onclick="openEditAchModal('${p.id}')">✏️</button>
-                <button class="btn btn-danger btn-sm" onclick="deleteAch('${p.id}','${escapeHtml(p.prestasi)}');adminTab('pencapaian',null)">🗑️</button>
+                <button class="btn btn-danger btn-sm" onclick="deleteAch('${p.id}','${escapeHtml(p.prestasi)}')">🗑️</button>
               </div>
             </td>
           </tr>`).join('')}
@@ -911,9 +917,18 @@ async function openEditBeritaModal(id) {
 }
 
 async function deleteBerita(id) {
-  if (!confirm('Hapus berita ini?')) return;
-  try { await DB.deleteBerita(id); showToast('Berita dihapus.', 'success'); }
-  catch(e) { showToast('Gagal: ' + e.message, 'error'); }
+  if (!(await showConfirm({
+    title: 'Hapus Berita',
+    message: 'Apakah Anda yakin ingin menghapus berita ini?',
+    confirmText: 'Hapus Berita',
+    type: 'danger',
+    icon: '📰'
+  }))) return;
+  try {
+    await DB.deleteBerita(id);
+    showToast('Berita dihapus.', 'success');
+    if (STATE.activePage === 'admin') await adminTab('berita');
+  } catch(e) { showToast('Gagal: ' + e.message, 'error'); }
 }
 
 async function saveKegiatan() {
@@ -994,7 +1009,13 @@ function openChangePasswordModal(id, username) {
 
 async function deleteUser(id, username) {
   if (username === STATE.username) { showToast('Tidak dapat menghapus akun sendiri!', 'error'); return; }
-  if (!confirm(`Hapus user "${username}"?`)) return;
+  if (!(await showConfirm({
+    title: 'Hapus User',
+    message: `Apakah Anda yakin ingin menghapus user "${username}"?`,
+    confirmText: 'Hapus User',
+    type: 'danger',
+    icon: '👤'
+  }))) return;
   try {
     await DB_AUTH.delete(id);
     showToast(`User "${username}" dihapus.`, 'success');

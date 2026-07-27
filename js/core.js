@@ -339,6 +339,88 @@ function closeModal(id) {
   }
 }
 
+function showConfirm(opts) {
+  return new Promise((resolve) => {
+    let title = 'Konfirmasi';
+    let message = '';
+    let confirmText = 'Ya, Lanjutkan';
+    let cancelText = 'Batal';
+    let type = 'danger';
+    let icon = '⚠️';
+
+    if (typeof opts === 'string') {
+      message = opts;
+      if (opts.toLowerCase().includes('hapus')) {
+        title = 'Konfirmasi Hapus';
+        confirmText = 'Hapus';
+        icon = '🗑️';
+      }
+    } else if (opts && typeof opts === 'object') {
+      title = opts.title || (opts.type === 'danger' ? 'Konfirmasi Hapus' : 'Konfirmasi');
+      message = opts.message || opts.text || '';
+      confirmText = opts.confirmText || (opts.type === 'danger' ? 'Hapus' : 'Ya, Lanjutkan');
+      cancelText = opts.cancelText || 'Batal';
+      type = opts.type || 'danger';
+      icon = opts.icon || (type === 'danger' ? '🗑️' : type === 'warning' ? '⚠️' : 'ℹ️');
+    }
+
+    let overlay = document.getElementById('custom-confirm-overlay');
+    if (!overlay) {
+      overlay = document.createElement('div');
+      overlay.id = 'custom-confirm-overlay';
+      overlay.className = 'confirm-overlay';
+      document.body.appendChild(overlay);
+    }
+
+    overlay.innerHTML = `
+      <div class="confirm-card">
+        <div class="confirm-header">
+          <div class="confirm-icon-wrap ${type}">${icon}</div>
+          <div class="confirm-title-wrap">
+            <div class="confirm-title">${escapeHtml(title)}</div>
+            <div class="confirm-message">${escapeHtml(message)}</div>
+          </div>
+        </div>
+        <div class="confirm-actions">
+          <button class="confirm-btn confirm-btn-cancel" id="confirm-btn-cancel">${escapeHtml(cancelText)}</button>
+          <button class="confirm-btn confirm-btn-action ${type}" id="confirm-btn-action">${escapeHtml(confirmText)}</button>
+        </div>
+      </div>
+    `;
+
+    // Force reflow for smooth animation
+    void overlay.offsetWidth;
+    overlay.classList.add('open');
+
+    function cleanup(result) {
+      overlay.classList.remove('open');
+      document.removeEventListener('keydown', handleKey);
+      setTimeout(() => {
+        if (overlay && overlay.parentNode) {
+          overlay.remove();
+        }
+        resolve(result);
+      }, 220);
+    }
+
+    function handleKey(e) {
+      if (e.key === 'Escape') {
+        cleanup(false);
+      } else if (e.key === 'Enter') {
+        cleanup(true);
+      }
+    }
+
+    document.addEventListener('keydown', handleKey);
+    overlay.querySelector('#confirm-btn-cancel').onclick = () => cleanup(false);
+    overlay.querySelector('#confirm-btn-action').onclick = () => cleanup(true);
+    overlay.onclick = (e) => {
+      if (e.target === overlay) cleanup(false);
+    };
+    overlay.querySelector('#confirm-btn-action').focus();
+  });
+}
+
 // ============================================================
 // TOAST
 // ============================================================
